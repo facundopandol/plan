@@ -18,7 +18,7 @@ const navItems = [
   { to: '/mes', label: 'Mes', icon: CalendarDays },
   { to: '/ingresos', label: 'Ingresos', icon: Wallet },
   { to: '/obligaciones', label: 'Obligaciones', icon: PiggyBank },
-  { to: '/inversiones', label: 'Inversiones', icon: TrendingUp },
+  { to: '/inversiones', label: 'Ahorro e Inversiones', icon: TrendingUp },
   { to: '/objetivos', label: 'Objetivos', icon: Target },
   { to: '/analisis', label: 'Análisis', icon: BarChart3 },
   { to: '/configuracion', label: 'Configuración', icon: Settings },

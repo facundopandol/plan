@@ -1,50 +1,43 @@
 import {
   ArrowDownCircle,
-  Banknote,
   PiggyBank,
   TrendingUp,
   Wallet,
 } from 'lucide-react'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { DashboardStatCard } from '@/components/dashboard/DashboardStatCard'
-import { MonthSummary } from '@/components/dashboard/MonthSummary'
 import { UpcomingDueDates } from '@/components/dashboard/UpcomingDueDates'
-import { useMonthlyPlan } from '@/hooks/useMonthlyPlan'
+import { useDashboardSummary } from '@/hooks/useDashboardSummary'
 
 function DashboardSkeleton() {
   return (
     <div className="space-y-8 animate-pulse">
       <div className="h-40 rounded-2xl bg-muted/40" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="h-28 rounded-2xl bg-muted/40" />
         ))}
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="h-80 rounded-2xl bg-muted/40" />
-        <div className="h-80 rounded-2xl bg-muted/40" />
-      </div>
+      <div className="h-80 rounded-2xl bg-muted/40" />
     </div>
   )
 }
 
 export function DashboardPage() {
-  const { data, isLoading } = useMonthlyPlan()
+  const { summary, obligations, isLoading } = useDashboardSummary()
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return <DashboardSkeleton />
   }
-
-  const { summary, obligations } = data
 
   return (
     <div className="space-y-8">
       <DashboardHeader />
 
       <section aria-label="Indicadores principales">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <DashboardStatCard
-            title="Ingreso"
+            title="Ingresos"
             value={summary.income}
             icon={Wallet}
             variant="income"
@@ -55,38 +48,27 @@ export function DashboardPage() {
             value={summary.obligations}
             icon={ArrowDownCircle}
             variant="obligation"
-            description="Compromisos fijos y variables"
+            description="Compromisos del mes"
           />
           <DashboardStatCard
-            title="Disponible"
-            value={summary.available}
-            icon={Banknote}
-            variant="available"
-            description="Lo que queda después de obligaciones"
-            featured
-          />
-          <DashboardStatCard
-            title="Objetivo de inversión"
+            title="Ahorro / Inversión"
             value={summary.investmentGoal}
             icon={TrendingUp}
             variant="investment"
-            description="Meta mensual de inversión"
+            description="Reserva que decidiste apartar"
           />
           <DashboardStatCard
             title="Dinero libre"
             value={summary.freeMoney}
             icon={PiggyBank}
             variant="free"
-            description="Para vivir sin restricciones"
+            description="Lo que podés gastar sin afectar tu plan"
+            featured
           />
         </div>
       </section>
 
-      <section
-        aria-label="Resumen y vencimientos"
-        className="grid gap-6 lg:grid-cols-2 lg:items-start"
-      >
-        <MonthSummary summary={summary} />
+      <section aria-label="Próximos vencimientos">
         <UpcomingDueDates obligations={obligations} />
       </section>
     </div>

@@ -1,105 +1,96 @@
-import { ArrowDown, ArrowUp, Minus } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageHeader } from '@/components/PageHeader'
-import { useAnalysisMetrics } from '@/hooks/usePlanQueries'
-import { useMonthlyPlan } from '@/hooks/useMonthlyPlan'
-import { cn } from '@/lib/utils'
-import { formatCurrency } from '@/utils/format'
+import { AnalysisHighlightsRow } from '@/components/analisis/AnalysisHighlightsRow'
+import { ChartCard } from '@/components/analisis/ChartCard'
+import { EvolutionLineChart } from '@/components/analisis/EvolutionLineChart'
+import { GoalProgressChart } from '@/components/analisis/GoalProgressChart'
+import { MonthlyComparisonChart } from '@/components/analisis/MonthlyComparisonChart'
+import { SavingsDistributionChart } from '@/components/analisis/SavingsDistributionChart'
+import { TopCategoriesChart } from '@/components/analisis/TopCategoriesChart'
+import { useAnalytics } from '@/hooks/useAnalytics'
+import { CHART_COLORS } from '@/utils/chart'
 
-const trendIcons = {
-  up: ArrowUp,
-  down: ArrowDown,
-  neutral: Minus,
-}
-
-const trendColors = {
-  up: 'text-emerald-600',
-  down: 'text-red-500',
-  neutral: 'text-muted-foreground',
+function AnalisisSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="h-16 rounded-2xl bg-muted/40" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-24 rounded-2xl bg-muted/40" />
+        ))}
+      </div>
+      <div className="h-80 rounded-2xl bg-muted/40" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-72 rounded-2xl bg-muted/40" />
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export function AnalisisPage() {
-  const { data: metrics, isLoading: metricsLoading } = useAnalysisMetrics()
-  const { data: monthData, isLoading: monthLoading } = useMonthlyPlan()
+  const { data, isLoading } = useAnalytics()
 
-  if (metricsLoading || monthLoading || !metrics || !monthData) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Cargando análisis...</p>
-      </div>
-    )
+  if (isLoading || !data) {
+    return <AnalisisSkeleton />
   }
 
-  const { summary } = monthData
-  const savingsRate = Math.round((summary.freeMoney / summary.income) * 100)
-  const obligationRate = Math.round((summary.obligations / summary.income) * 100)
+  const { evolution, topCategories, savingsDistribution, goalProgress, highlights } = data
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Análisis"
-        description="Indicadores clave de tu salud financiera mensual."
+        description="Visualizá cómo evoluciona tu planificación financiera mes a mes."
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <Card className="border-border/60 shadow-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Tasa de ahorro
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold">{savingsRate}%</p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/60 shadow-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Compromiso de ingreso
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold">{obligationRate}%</p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/60 shadow-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Disponible neto
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold tabular-nums">
-              {formatCurrency(summary.available)}
-            </p>
-          </CardContent>
-        </Card>
+      <AnalysisHighlightsRow highlights={highlights} />
+
+      <ChartCard
+        title="Comparación mensual"
+        description="Ingresos, obligaciones, reserva y dinero libre"
+      >
+        <MonthlyComparisonChart data={evolution} />
+      </ChartCard>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartCard title="Evolución del dinero libre" description="Lo que podés gastar sin afectar tu plan">
+          <EvolutionLineChart data={evolution} dataKey="freeMoney" color={CHART_COLORS.freeMoney} />
+        </ChartCard>
+
+        <ChartCard title="Capital reservado por mes" description="Ahorro e inversiones planificados">
+          <EvolutionLineChart data={evolution} dataKey="reserved" color={CHART_COLORS.reserved} />
+        </ChartCard>
+
+        <ChartCard
+          title="Distribución del ahorro"
+          description="Destinos del capital reservado en el mes actual"
+        >
+          <SavingsDistributionChart data={savingsDistribution} />
+        </ChartCard>
+
+        <ChartCard title="Progreso de objetivos" description="Avance hacia tus metas de ahorro">
+          <GoalProgressChart data={goalProgress} />
+        </ChartCard>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {metrics.map((metric) => {
-          const TrendIcon = trendIcons[metric.trend ?? 'neutral']
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ChartCard title="Evolución de ingresos" description="Total de ingresos por mes">
+          <EvolutionLineChart data={evolution} dataKey="income" color={CHART_COLORS.income} />
+        </ChartCard>
 
-          return (
-            <Card key={metric.label} className="border-border/60 shadow-none">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {metric.label}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-semibold">{metric.value}</p>
-                {metric.change && (
-                  <div className={cn('mt-1 flex items-center gap-1 text-xs', trendColors[metric.trend ?? 'neutral'])}>
-                    <TrendIcon className="size-3" />
-                    {metric.change}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )
-        })}
+        <ChartCard title="Evolución de obligaciones" description="Compromisos mensuales">
+          <EvolutionLineChart data={evolution} dataKey="obligations" color={CHART_COLORS.obligations} />
+        </ChartCard>
       </div>
+
+      <ChartCard
+        title="Top categorías"
+        description="Obligaciones por categoría en el mes actual"
+        className="max-w-2xl"
+      >
+        <TopCategoriesChart data={topCategories} />
+      </ChartCard>
     </div>
   )
 }

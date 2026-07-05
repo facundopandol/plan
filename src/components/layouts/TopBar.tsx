@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Menu } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
-import { useMonthContext } from '@/context/MonthContext'
-import { useMonthOptions, useUserSettings } from '@/hooks/usePlanQueries'
+import { useMonthOptions, useSelectedMonth, useSettings } from '@/hooks/usePlan'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,9 +19,9 @@ export function TopBar() {
   const [open, setOpen] = useState(false)
   const location = useLocation()
   const isDashboard = location.pathname === '/'
-  const { selectedMonth, setSelectedMonth } = useMonthContext()
-  const { data: months = [] } = useMonthOptions()
-  const { data: user } = useUserSettings()
+  const { selectedMonth, setSelectedMonth } = useSelectedMonth()
+  const months = useMonthOptions()
+  const { settings } = useSettings()
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-border/60 bg-background px-4 lg:px-6">
@@ -56,10 +55,10 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="hidden text-sm font-medium sm:inline">{user?.name}</span>
+        <span className="hidden text-sm font-medium sm:inline">{settings.name}</span>
         <Avatar className="size-8">
           <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-            {user ? getInitials(user.name) : '??'}
+            {getInitials(settings.name)}
           </AvatarFallback>
         </Avatar>
       </div>

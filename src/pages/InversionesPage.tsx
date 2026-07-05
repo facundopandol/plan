@@ -1,69 +1,105 @@
-import { CurrencyCell, DataTable } from '@/components/DataTable'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from 'react'
+import type { InvestmentEntry } from '@/types'
+import type { InvestmentEntryFormValues } from '@/schemas/inversionSchemas'
+import { PageListSkeleton } from '@/components/shared/PageListSkeleton'
 import { PageHeader } from '@/components/PageHeader'
-import { useMonthlyPlan } from '@/hooks/useMonthlyPlan'
-import { formatCurrency, formatPercent } from '@/utils/format'
+import { DeleteInvestmentDialog } from '@/components/inversiones/DeleteInvestmentDialog'
+import { InvestmentDistribution } from '@/components/inversiones/InvestmentDistribution'
+import { InvestmentEntriesList } from '@/components/inversiones/InvestmentEntriesList'
+import { InvestmentFormModal } from '@/components/inversiones/InvestmentFormModal'
+import { InvestmentMonthlyTotal } from '@/components/inversiones/InvestmentMonthlyTotal'
+import { useMonthOptions, useSelectedMonth } from '@/hooks/usePlan'
+import { useInvestmentEntries } from '@/hooks/useInvestmentEntries'
 
 export function InversionesPage() {
-  const { data, isLoading } = useMonthlyPlan()
+  const { selectedMonth } = useSelectedMonth()
+  const months = useMonthOptions()
+  const {
+    isLoading,
+    goals,
+    entries,
+    monthlyTotal,
+    distribution,
+    createEntry,
+    editEntry,
+    deleteEntry,
+  } = useInvestmentEntries()
 
-  if (isLoading || !data) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-muted-foreground">Cargando inversiones...</p>
-      </div>
-    )
+  const [formOpen, setFormOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [editing, setEditing] = useState<InvestmentEntry | null>(null)
+  const [deleting, setDeleting] = useState<InvestmentEntry | null>(null)
+
+  const monthLabel = months.find((m) => m.value === selectedMonth)?.label ?? selectedMonth
+  const defaultDate = `${selectedMonth}-01`
+
+  const openCreate = () => {
+    setEditing(null)
+    setFormOpen(true)
   }
 
-  const { investments, summary } = data
-  const total = investments.reduce((sum, i) => sum + i.amount, 0)
+  const openEdit = (entry: InvestmentEntry) => {
+    setEditing(entry)
+    setFormOpen(true)
+  }
+
+  const openDelete = (entry: InvestmentEntry) => {
+    setDeleting(entry)
+    setDeleteOpen(true)
+  }
+
+  const handleFormSubmit = (values: InvestmentEntryFormValues) => {
+    if (editing) {
+      editEntry({ ...editing, ...values, comment: values.comment ?? '' })
+    } else {
+      createEntry({ ...values, comment: values.comment ?? '' })
+    }
+  }
+
+  const handleDeleteConfirm = () => {
+    if (deleting) {
+      deleteEntry(deleting.id)
+      setDeleteOpen(false)
+      setDeleting(null)
+    }
+  }
+
+  if (isLoading) {
+    return <PageListSkeleton />
+  }
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
-        title="Inversiones"
-        description="Asignación de capital para hacer crecer tu patrimonio."
+        title="Ahorro e Inversiones"
+        description="Registrá cómo distribuís el capital que reservaste para ahorro e inversiones este mes."
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2">
-        <Card className="border-border/60 shadow-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total invertido
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold tabular-nums">{formatCurrency(total)}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/60 shadow-none">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Objetivo del mes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold tabular-nums">
-              {formatCurrency(summary.investmentGoal)}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {total >= summary.investmentGoal ? 'Objetivo alcanzado' : 'En progreso'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <InvestmentMonthlyTotal total={monthlyTotal} monthLabel={monthLabel} />
 
-      <DataTable
-        headers={['Nombre', 'Tipo', 'Monto', 'Rendimiento']}
-        rows={investments.map((i) => [
-          i.name,
-          i.type,
-          i.amount,
-          i.returnRate ? `${formatPercent(i.returnRate)}` : '—',
-        ])}
-        formatters={{
-          2: (v) => <CurrencyCell value={v as number} />,
-        }}
+      <InvestmentDistribution items={distribution} total={monthlyTotal} />
+
+      <InvestmentEntriesList
+        entries={entries}
+        goals={goals}
+        onNew={openCreate}
+        onEdit={openEdit}
+        onDelete={openDelete}
+      />
+
+      <InvestmentFormModal
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        entry={editing}
+        defaultDate={defaultDate}
+        onSubmit={handleFormSubmit}
+      />
+
+      <DeleteInvestmentDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        entry={deleting}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   )

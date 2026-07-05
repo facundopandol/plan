@@ -1,7 +1,6 @@
 import { CalendarDays, ChevronRight, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useMonthContext } from '@/context/MonthContext'
-import { useMonthOptions, useUserSettings } from '@/hooks/usePlanQueries'
+import { useMonthOptions, useSelectedMonth, useSettings } from '@/hooks/usePlan'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -14,12 +13,12 @@ import { getFirstName, getGreeting } from '@/utils/greeting'
 
 export function DashboardHeader() {
   const navigate = useNavigate()
-  const { selectedMonth, setSelectedMonth } = useMonthContext()
-  const { data: months = [] } = useMonthOptions()
-  const { data: user } = useUserSettings()
+  const { selectedMonth, setSelectedMonth } = useSelectedMonth()
+  const months = useMonthOptions()
+  const { settings } = useSettings()
 
   const selectedLabel = months.find((m) => m.value === selectedMonth)?.label
-  const firstName = user ? getFirstName(user.name) : 'Usuario'
+  const firstName = getFirstName(settings.name)
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-zinc-50 via-white to-zinc-50/50 p-6 md:p-8">

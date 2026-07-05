@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { QueryErrorBanner } from '@/components/shared/QueryErrorBanner'
 import { SidebarNav } from '@/components/layouts/Sidebar'
 import { TopBar } from '@/components/layouts/TopBar'
 
@@ -13,6 +14,7 @@ export function AppLayout() {
         <TopBar />
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-6xl px-4 py-8 lg:px-8">
+            <QueryErrorBanner />
             <Outlet />
           </div>
         </main>
