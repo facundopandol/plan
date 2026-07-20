@@ -1,0 +1,31 @@
+{
+  "name": "Plan — Planificación financiera",
+  "short_name": "Plan",
+  "description": "Seguí tu plan financiero desde el celular: ingresos, obligaciones, ahorro y objetivos.",
+  "theme_color": "#171717",
+  "background_color": "#fafafa",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "lang": "es-AR",
+  "start_url": "/",
+  "scope": "/",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -45,85 +45,159 @@ export function IncomesTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/50">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
-          <thead>
-            <tr className="border-b bg-muted/30">
-              <th className="px-4 py-3 text-left">
-                <button
-                  type="button"
-                  onClick={onToggleSort}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Fecha
-                  {sortDirection === 'asc' ? (
-                    <ArrowUp className="size-3" />
-                  ) : sortDirection === 'desc' ? (
-                    <ArrowDown className="size-3" />
-                  ) : (
-                    <ArrowUpDown className="size-3 opacity-40" />
-                  )}
-                </button>
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Tipo
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Descripción
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Monto
-              </th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((entry) => (
-              <tr
-                key={entry.id}
-                className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/20"
-              >
-                <td className="px-4 py-3.5 text-muted-foreground">{formatDate(entry.date)}</td>
-                <td className="px-4 py-3.5">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between sm:hidden">
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {entries.length} {entries.length === 1 ? 'ingreso' : 'ingresos'}
+        </p>
+        <button
+          type="button"
+          onClick={onToggleSort}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
+        >
+          Fecha
+          {sortDirection === 'asc' ? (
+            <ArrowUp className="size-3" />
+          ) : sortDirection === 'desc' ? (
+            <ArrowDown className="size-3" />
+          ) : (
+            <ArrowUpDown className="size-3 opacity-40" />
+          )}
+        </button>
+      </div>
+
+      <ul className="space-y-2 sm:hidden">
+        {entries.map((entry) => (
+          <li
+            key={entry.id}
+            className="rounded-2xl border border-border/50 bg-card px-4 py-3"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={typeVariant[entry.type]} className="font-normal">
                     {entry.type}
                   </Badge>
-                </td>
-                <td className={cn('px-4 py-3.5 font-medium text-muted-foreground')}>
-                  {entry.type === 'Otro' ? getIncomeEntryLabel(entry) : '—'}
-                </td>
-                <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-emerald-600">
-                  {formatCurrency(entry.amount)}
-                </td>
-                <td className="px-4 py-3.5">
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => onEdit(entry)}
-                    >
-                      <Pencil className="size-3.5" />
-                      <span className="sr-only">Editar</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-destructive hover:text-destructive"
-                      onClick={() => onDelete(entry)}
-                    >
-                      <Trash2 className="size-3.5" />
-                      <span className="sr-only">Eliminar</span>
-                    </Button>
-                  </div>
-                </td>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDate(entry.date)}
+                  </span>
+                </div>
+                {entry.type === 'Otro' && (
+                  <p className="mt-1 truncate text-sm text-muted-foreground">
+                    {getIncomeEntryLabel(entry)}
+                  </p>
+                )}
+              </div>
+              <p className="shrink-0 text-sm font-semibold tabular-nums text-emerald-600">
+                {formatCurrency(entry.amount)}
+              </p>
+            </div>
+            <div className="mt-3 flex justify-end gap-1 border-t border-border/40 pt-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-9"
+                onClick={() => onEdit(entry)}
+              >
+                <Pencil className="size-3.5" />
+                <span className="sr-only">Editar</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-9 text-destructive hover:text-destructive"
+                onClick={() => onDelete(entry)}
+              >
+                <Trash2 className="size-3.5" />
+                <span className="sr-only">Eliminar</span>
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="hidden overflow-hidden rounded-2xl border border-border/50 sm:block">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b bg-muted/30">
+                <th className="px-4 py-3 text-left">
+                  <button
+                    type="button"
+                    onClick={onToggleSort}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Fecha
+                    {sortDirection === 'asc' ? (
+                      <ArrowUp className="size-3" />
+                    ) : sortDirection === 'desc' ? (
+                      <ArrowDown className="size-3" />
+                    ) : (
+                      <ArrowUpDown className="size-3 opacity-40" />
+                    )}
+                  </button>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Tipo
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Descripción
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Monto
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Acciones
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {entries.map((entry) => (
+                <tr
+                  key={entry.id}
+                  className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/20"
+                >
+                  <td className="px-4 py-3.5 text-muted-foreground">
+                    {formatDate(entry.date)}
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <Badge variant={typeVariant[entry.type]} className="font-normal">
+                      {entry.type}
+                    </Badge>
+                  </td>
+                  <td className={cn('px-4 py-3.5 font-medium text-muted-foreground')}>
+                    {entry.type === 'Otro' ? getIncomeEntryLabel(entry) : '—'}
+                  </td>
+                  <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-emerald-600">
+                    {formatCurrency(entry.amount)}
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={() => onEdit(entry)}
+                      >
+                        <Pencil className="size-3.5" />
+                        <span className="sr-only">Editar</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 text-destructive hover:text-destructive"
+                        onClick={() => onDelete(entry)}
+                      >
+                        <Trash2 className="size-3.5" />
+                        <span className="sr-only">Eliminar</span>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )

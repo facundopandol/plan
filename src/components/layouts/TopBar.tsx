@@ -1,9 +1,6 @@
-import { useState } from 'react'
-import { Menu } from 'lucide-react'
 import { useLocation } from 'react-router-dom'
 import { useMonthOptions, useSelectedMonth, useSettings } from '@/hooks/usePlan'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -11,12 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { SidebarNav } from '@/components/layouts/Sidebar'
 import { getInitials } from '@/utils/format'
 
 export function TopBar() {
-  const [open, setOpen] = useState(false)
   const location = useLocation()
   const isDashboard = location.pathname === '/'
   const { selectedMonth, setSelectedMonth } = useSelectedMonth()
@@ -24,43 +18,40 @@ export function TopBar() {
   const { settings } = useSettings()
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border/60 bg-background px-4 lg:px-6">
-      <div className="flex items-center gap-3">
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="lg:hidden">
-              <Menu className="size-5" />
-              <span className="sr-only">Abrir menú</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0">
-            <SidebarNav onNavigate={() => setOpen(false)} />
-          </SheetContent>
-        </Sheet>
+    <header className="shrink-0 border-b border-border/60 bg-background pt-[env(safe-area-inset-top)]">
+      <div className="flex h-14 items-center justify-between px-4 lg:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex items-center gap-2 lg:hidden">
+            <div className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <span className="text-xs font-bold">P</span>
+            </div>
+            <span className="text-sm font-semibold tracking-tight">Plan</span>
+          </div>
 
-        {!isDashboard && (
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-[180px] border-border/60 bg-background">
-              <SelectValue placeholder="Seleccionar mes" />
-            </SelectTrigger>
-            <SelectContent>
-              {months.map((month) => (
-                <SelectItem key={month.value} value={month.value}>
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-      </div>
+          {!isDashboard && (
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="w-[140px] border-border/60 bg-background sm:w-[180px]">
+                <SelectValue placeholder="Seleccionar mes" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
 
-      <div className="flex items-center gap-3">
-        <span className="hidden text-sm font-medium sm:inline">{settings.name}</span>
-        <Avatar className="size-8">
-          <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-            {getInitials(settings.name)}
-          </AvatarFallback>
-        </Avatar>
+        <div className="flex items-center gap-3">
+          <span className="hidden text-sm font-medium sm:inline">{settings.name}</span>
+          <Avatar className="size-8">
+            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+              {getInitials(settings.name)}
+            </AvatarFallback>
+          </Avatar>
+        </div>
       </div>
     </header>
   )

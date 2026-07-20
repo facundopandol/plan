@@ -26,7 +26,7 @@ const columns: { key: ObligationSortField; label: string; className?: string }[]
 const frequencyVariant: Record<FixedObligation['frequency'], 'secondary' | 'outline' | 'default'> = {
   Mensual: 'secondary',
   Anual: 'outline',
-  'Única': 'default',
+  Única: 'default',
 }
 
 export function ObligationsTable({
@@ -49,87 +49,138 @@ export function ObligationsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/50">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] text-sm">
-          <thead>
-            <tr className="border-b bg-muted/30">
-              {columns.map((col) => (
-                <th key={col.key} className={cn('px-4 py-3', col.className)}>
-                  <button
-                    type="button"
-                    onClick={() => onSort(col.key)}
-                    className={cn(
-                      'inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground',
-                      col.className?.includes('text-right') && 'ml-auto',
-                      col.className?.includes('text-center') && 'mx-auto',
-                    )}
-                  >
-                    {col.label}
-                    <SortIcon
-                      field={col.key}
-                      sortField={sortField}
-                      sortDirection={sortDirection}
-                    />
-                  </button>
-                </th>
-              ))}
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {obligations.map((obligation) => (
-              <tr
-                key={obligation.id}
-                className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/20"
-              >
-                <td className="px-4 py-3.5">
-                  <span className="font-medium">{obligation.name}</span>
-                </td>
-                <td className="px-4 py-3.5 text-right font-semibold tabular-nums">
-                  {formatCurrency(obligation.amount)}
-                </td>
-                <td className="px-4 py-3.5">
+    <div className="space-y-3">
+      <ul className="space-y-2 sm:hidden">
+        {obligations.map((obligation) => (
+          <li
+            key={obligation.id}
+            className="rounded-2xl border border-border/50 bg-card px-4 py-3"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate font-medium">{obligation.name}</p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                   <Badge variant={frequencyVariant[obligation.frequency]}>
                     {obligation.frequency}
                   </Badge>
-                </td>
-                <td className="px-4 py-3.5 text-center tabular-nums text-muted-foreground">
-                  Día {obligation.dueDay}
-                </td>
-                <td className="px-4 py-3.5 text-center">
                   <Badge variant={obligation.active ? 'success' : 'outline'}>
-                    {obligation.active ? 'Sí' : 'No'}
+                    {obligation.active ? 'Activa' : 'Inactiva'}
                   </Badge>
-                </td>
-                <td className="px-4 py-3.5">
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8"
-                      onClick={() => onEdit(obligation)}
+                  <span className="text-xs text-muted-foreground">
+                    Día {obligation.dueDay}
+                  </span>
+                </div>
+              </div>
+              <p className="shrink-0 text-sm font-semibold tabular-nums">
+                {formatCurrency(obligation.amount)}
+              </p>
+            </div>
+            <div className="mt-3 flex justify-end gap-1 border-t border-border/40 pt-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-9"
+                onClick={() => onEdit(obligation)}
+              >
+                <Pencil className="size-3.5" />
+                <span className="sr-only">Editar</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-9 text-destructive hover:text-destructive"
+                onClick={() => onDelete(obligation)}
+              >
+                <Trash2 className="size-3.5" />
+                <span className="sr-only">Eliminar</span>
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className="hidden overflow-hidden rounded-2xl border border-border/50 sm:block">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-sm">
+            <thead>
+              <tr className="border-b bg-muted/30">
+                {columns.map((col) => (
+                  <th key={col.key} className={cn('px-4 py-3', col.className)}>
+                    <button
+                      type="button"
+                      onClick={() => onSort(col.key)}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground',
+                        col.className?.includes('text-right') && 'ml-auto',
+                        col.className?.includes('text-center') && 'mx-auto',
+                      )}
                     >
-                      <Pencil className="size-3.5" />
-                      <span className="sr-only">Editar</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-8 text-destructive hover:text-destructive"
-                      onClick={() => onDelete(obligation)}
-                    >
-                      <Trash2 className="size-3.5" />
-                      <span className="sr-only">Eliminar</span>
-                    </Button>
-                  </div>
-                </td>
+                      {col.label}
+                      <SortIcon
+                        field={col.key}
+                        sortField={sortField}
+                        sortDirection={sortDirection}
+                      />
+                    </button>
+                  </th>
+                ))}
+                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Acciones
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {obligations.map((obligation) => (
+                <tr
+                  key={obligation.id}
+                  className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/20"
+                >
+                  <td className="px-4 py-3.5">
+                    <span className="font-medium">{obligation.name}</span>
+                  </td>
+                  <td className="px-4 py-3.5 text-right font-semibold tabular-nums">
+                    {formatCurrency(obligation.amount)}
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <Badge variant={frequencyVariant[obligation.frequency]}>
+                      {obligation.frequency}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3.5 text-center tabular-nums text-muted-foreground">
+                    Día {obligation.dueDay}
+                  </td>
+                  <td className="px-4 py-3.5 text-center">
+                    <Badge variant={obligation.active ? 'success' : 'outline'}>
+                      {obligation.active ? 'Sí' : 'No'}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={() => onEdit(obligation)}
+                      >
+                        <Pencil className="size-3.5" />
+                        <span className="sr-only">Editar</span>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 text-destructive hover:text-destructive"
+                        onClick={() => onDelete(obligation)}
+                      >
+                        <Trash2 className="size-3.5" />
+                        <span className="sr-only">Eliminar</span>
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
