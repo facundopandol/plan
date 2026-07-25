@@ -16,17 +16,15 @@ interface ObligationsTableProps {
 }
 
 const columns: { key: ObligationSortField; label: string; className?: string }[] = [
-  { key: 'name', label: 'Tipo' },
+  { key: 'name', label: 'Obligación' },
   { key: 'amount', label: 'Monto', className: 'text-right' },
   { key: 'frequency', label: 'Frecuencia' },
-  { key: 'dueDay', label: 'Vencimiento', className: 'text-center' },
   { key: 'active', label: 'Activa', className: 'text-center' },
 ]
 
-const frequencyVariant: Record<FixedObligation['frequency'], 'secondary' | 'outline' | 'default'> = {
+const frequencyVariant: Record<FixedObligation['frequency'], 'secondary' | 'outline'> = {
   Mensual: 'secondary',
   Anual: 'outline',
-  'Única': 'default',
 }
 
 export function ObligationsTable({
@@ -86,7 +84,12 @@ export function ObligationsTable({
                 className="border-b border-border/40 transition-colors last:border-0 hover:bg-muted/20"
               >
                 <td className="px-4 py-3.5">
-                  <span className="font-medium">{obligation.name}</span>
+                  <div>
+                    <span className="font-medium">{obligation.name}</span>
+                    {obligation.description && (
+                      <p className="text-xs text-muted-foreground">{obligation.category}</p>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3.5 text-right font-semibold tabular-nums">
                   {formatCurrency(obligation.amount)}
@@ -95,9 +98,6 @@ export function ObligationsTable({
                   <Badge variant={frequencyVariant[obligation.frequency]}>
                     {obligation.frequency}
                   </Badge>
-                </td>
-                <td className="px-4 py-3.5 text-center tabular-nums text-muted-foreground">
-                  Día {obligation.dueDay}
                 </td>
                 <td className="px-4 py-3.5 text-center">
                   <Badge variant={obligation.active ? 'success' : 'outline'}>

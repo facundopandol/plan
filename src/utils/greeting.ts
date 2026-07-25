@@ -6,7 +6,16 @@ export function getGreeting(): string {
 }
 
 export function getFirstName(fullName: string): string {
-  return fullName.split(' ')[0] ?? fullName
+  const trimmed = fullName.trim()
+  if (!trimmed) return ''
+  return trimmed.split(/\s+/)[0] ?? trimmed
+}
+
+/** "Buenos días, Juan" o solo "Buenos días" si no hay nombre. */
+export function formatPersonalGreeting(fullName: string): string {
+  const greeting = getGreeting()
+  const firstName = getFirstName(fullName)
+  return firstName ? `${greeting}, ${firstName}` : greeting
 }
 
 export function getDaysUntil(date: string): number {

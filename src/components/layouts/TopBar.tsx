@@ -55,7 +55,9 @@ export function TopBar() {
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="hidden text-sm font-medium sm:inline">{settings.name}</span>
+        {settings.name.trim() ? (
+          <span className="hidden text-sm font-medium sm:inline">{settings.name.trim()}</span>
+        ) : null}
         <Avatar className="size-8">
           <AvatarFallback className="bg-primary text-primary-foreground text-xs">
             {getInitials(settings.name)}

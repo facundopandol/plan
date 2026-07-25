@@ -14,7 +14,6 @@ function toPlanState(plan: ReturnType<typeof usePlan>): PlanState {
     goals: plan.goals,
     investments: plan.investments,
     monthPlans: plan.monthPlans,
-    obligationTypes: plan.obligationTypes,
   }
 }
 

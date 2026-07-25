@@ -14,7 +14,9 @@ export function buildAnalyticsFromPlan(state: PlanState): AnalyticsData {
         .filter((entry) => getMonthFromDate(entry.date) === option.value)
         .reduce((sum, entry) => sum + entry.amount, 0)
       const obligations = plan?.obligations.reduce((sum, item) => sum + item.amount, 0) ?? 0
-      const reserved = plan?.investmentGoal ?? 0
+      const reserved = state.investments
+        .filter((entry) => getMonthFromDate(entry.date) === option.value)
+        .reduce((sum, entry) => sum + entry.amount, 0)
       const freeMoney = income - obligations - reserved
 
       return {
@@ -76,7 +78,7 @@ export function buildAnalyticsFromPlan(state: PlanState): AnalyticsData {
 
   const topObligation = (selectedPlan?.obligations ?? []).reduce(
     (best, item) => (item.amount > best.amount ? item : best),
-    selectedPlan?.obligations[0] ?? { name: '—', amount: 0, category: 'Otros', id: '', dueDate: '', paid: false },
+    selectedPlan?.obligations[0] ?? { name: '—', amount: 0, category: 'Otro', id: '' },
   )
 
   const topDestination = monthEntries.reduce(

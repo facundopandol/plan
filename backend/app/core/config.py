@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql://plan:plan@localhost:5432/plan"
 
-    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:5175,http://127.0.0.1:5175"
 
     jwt_secret_key: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"

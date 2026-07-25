@@ -56,8 +56,8 @@ export function MonthSummary({ summary }: MonthSummaryProps) {
                   className={cn(
                     'text-sm font-semibold tabular-nums',
                     row.sign === 'minus' && 'text-muted-foreground',
-                    row.key === 'available' && 'text-blue-600',
-                    row.key === 'freeMoney' && 'text-teal-600',
+                    row.key === 'available' && 'text-blue-600 dark:text-blue-300',
+                    row.key === 'freeMoney' && 'text-teal-600 dark:text-teal-300',
                   )}
                 >
                   {row.sign === 'minus' && '− '}

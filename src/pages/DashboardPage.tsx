@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { DashboardStatCard } from '@/components/dashboard/DashboardStatCard'
-import { UpcomingDueDates } from '@/components/dashboard/UpcomingDueDates'
+import { MonthObligationsSummary } from '@/components/dashboard/MonthObligationsSummary'
 import { useDashboardSummary } from '@/hooks/useDashboardSummary'
 
 function DashboardSkeleton() {
@@ -55,7 +55,7 @@ export function DashboardPage() {
             value={summary.investmentGoal}
             icon={TrendingUp}
             variant="investment"
-            description="Reserva que decidiste apartar"
+            description="Capital destinado este mes"
           />
           <DashboardStatCard
             title="Dinero libre"
@@ -68,8 +68,8 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <section aria-label="Próximos vencimientos">
-        <UpcomingDueDates obligations={obligations} />
+      <section aria-label="Obligaciones del mes">
+        <MonthObligationsSummary obligations={obligations} />
       </section>
     </div>
   )

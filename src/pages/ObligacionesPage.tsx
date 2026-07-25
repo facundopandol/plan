@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import type { FixedObligation } from '@/types'
 import type { FixedObligationFormValues } from '@/schemas/obligacionSchemas'
-import { resolveObligationName } from '@/utils/obligationMappers'
-import { ManageObligationTypesDialog } from '@/components/obligaciones/ManageObligationTypesDialog'
+import { buildObligationPayload } from '@/utils/obligationMappers'
 import { PageListSkeleton } from '@/components/shared/PageListSkeleton'
 import { PageHeader } from '@/components/PageHeader'
 import { DeleteObligationDialog } from '@/components/obligaciones/DeleteObligationDialog'
@@ -33,7 +32,6 @@ export function ObligacionesPage() {
   } = useFixedObligations()
 
   const [formOpen, setFormOpen] = useState(false)
-  const [typesOpen, setTypesOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [editing, setEditing] = useState<FixedObligation | null>(null)
   const [deleting, setDeleting] = useState<FixedObligation | null>(null)
@@ -54,19 +52,21 @@ export function ObligacionesPage() {
   }
 
   const handleFormSubmit = (values: FixedObligationFormValues) => {
-    const payload = {
-      name: resolveObligationName(values.type),
-      category: resolveObligationName(values.type),
+    const payload = buildObligationPayload(values.type, values.description)
+
+    const entry = {
+      name: payload.name,
+      category: payload.category,
+      description: payload.description,
       amount: values.amount,
       frequency: values.frequency,
-      dueDay: values.dueDay,
       active: values.active,
     }
 
     if (editing) {
-      updateObligation({ ...editing, ...payload })
+      updateObligation({ ...editing, ...entry })
     } else {
-      addObligation(payload)
+      addObligation(entry)
     }
   }
 
@@ -86,7 +86,7 @@ export function ObligacionesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Obligaciones"
-        description="Administrá todos tus compromisos financieros fijos del mes."
+        description="Definí cuánto reservar por compromiso fijo. Solo montos y frecuencia mensual o anual."
       />
 
       <ObligationsToolbar
@@ -99,7 +99,6 @@ export function ObligacionesPage() {
         onFrequencyFilterChange={setFrequencyFilter}
         filteredCount={filteredCount}
         totalCount={totalCount}
-        onManageTypes={() => setTypesOpen(true)}
         onNew={openCreate}
       />
 
@@ -125,8 +124,6 @@ export function ObligacionesPage() {
         obligation={deleting}
         onConfirm={handleDeleteConfirm}
       />
-
-      <ManageObligationTypesDialog open={typesOpen} onOpenChange={setTypesOpen} />
     </div>
   )
 }

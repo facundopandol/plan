@@ -125,8 +125,8 @@ function GoalStat({
       <p
         className={cn(
           'mt-0.5 truncate text-xs font-semibold tabular-nums',
-          variant === 'danger' && 'text-red-600',
-          variant === 'warning' && 'text-amber-600',
+          variant === 'danger' && 'text-red-600 dark:text-red-400',
+          variant === 'warning' && 'text-amber-600 dark:text-amber-300',
           variant === 'default' && accent,
         )}
       >

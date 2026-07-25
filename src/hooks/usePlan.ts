@@ -1,11 +1,7 @@
 import { useMemo } from 'react'
 import { usePlan } from '@/context/PlanContext'
-import type { Income, MonthlySummary, Obligation } from '@/types'
-import {
-  incomeEntryToPlanIncome,
-  planIncomeToNewEntry,
-  planIncomeToUpdatedEntry,
-} from '@/utils/incomeMappers'
+import type { MonthlySummary, Obligation } from '@/types'
+import { getMonthFromDate } from '@/utils/date'
 import {
   fixedObligationToMonthView,
   getActiveMonthlyFixedObligations,
@@ -61,134 +57,33 @@ export function useFixedObligationsData() {
   }
 }
 
-export function useMonthPlanState() {
+export function useDashboardSummary() {
   const plan = usePlan()
   const {
     selectedMonth,
     isLoading,
-    incomes: globalIncomes,
-    fixedObligations,
-    getMonthPlan,
-    getIncomeEntriesForMonth,
     getIncomeMonthlyTotal,
+    fixedObligations,
+    investments,
   } = plan
-  const monthPlan = getMonthPlan(selectedMonth)
-  const monthEntries = getIncomeEntriesForMonth(selectedMonth)
 
-  const incomes = useMemo<Income[]>(() => {
-    const fromRegister = monthEntries.map(incomeEntryToPlanIncome)
-    const planOnly = (monthPlan?.incomes ?? []).filter(
-      (item) => !fromRegister.some((entry) => entry.id === item.id),
-    )
-    return [...fromRegister, ...planOnly]
-  }, [monthEntries, monthPlan?.incomes])
-
-  const obligations = useMemo<Obligation[]>(() => {
-    const monthOnly = monthPlan?.obligations ?? []
-    const fromFixed = getActiveMonthlyFixedObligations(fixedObligations)
-      .map((item) => fixedObligationToMonthView(item, selectedMonth))
-      .filter((item) => !monthOnly.some((entry) => entry.id === item.id))
-    return [...monthOnly, ...fromFixed]
-  }, [fixedObligations, monthPlan?.obligations, selectedMonth])
-
-  const summary = useMemo<MonthlySummary>(() => {
-    const income =
-      getIncomeMonthlyTotal(selectedMonth) +
-      (monthPlan?.incomes ?? [])
-        .filter((item) => !monthEntries.some((entry) => entry.id === item.id))
-        .reduce((sum, item) => sum + item.amount, 0)
-    const obligationsTotal =
-      (monthPlan?.obligations.reduce((sum, o) => sum + o.amount, 0) ?? 0) +
-      sumActiveMonthlyFixedObligations(fixedObligations)
-    const investmentGoal = monthPlan?.investmentGoal ?? 0
-    const available = income - obligationsTotal
-    const freeMoney = available - investmentGoal
-
-    return {
-      income,
-      obligations: obligationsTotal,
-      available,
-      investmentGoal,
-      freeMoney,
-    }
-  }, [monthPlan, selectedMonth, getIncomeMonthlyTotal, monthEntries, fixedObligations])
-
-  const isGlobalIncome = (id: string) => globalIncomes.some((entry) => entry.id === id)
-  const isFixedObligation = (id: string) => fixedObligations.some((entry) => entry.id === id)
-
-  return {
-    isLoading,
-    incomes,
-    obligations,
-    investmentGoal: monthPlan?.investmentGoal ?? 0,
-    summary,
-    setInvestmentGoal: (amount: number) => plan.setMonthInvestmentGoal(selectedMonth, amount),
-    addIncome: (income: Income) => {
-      plan.addIncome(planIncomeToNewEntry(income, selectedMonth))
-    },
-    updateIncome: (income: Income) => {
-      if (isGlobalIncome(income.id)) {
-        const existing = globalIncomes.find((entry) => entry.id === income.id)
-        if (existing) {
-          plan.updateIncome(planIncomeToUpdatedEntry(income, existing))
-        }
-        return
-      }
-      plan.updateMonthIncome(selectedMonth, income)
-    },
-    removeIncome: (id: string) => {
-      if (isGlobalIncome(id)) {
-        plan.removeIncome(id)
-        return
-      }
-      plan.removeMonthIncome(selectedMonth, id)
-    },
-    addObligation: (obligation: Parameters<typeof plan.addMonthObligation>[1]) =>
-      plan.addMonthObligation(selectedMonth, obligation),
-    updateObligation: (obligation: Parameters<typeof plan.updateMonthObligation>[1]) => {
-      if (isFixedObligation(obligation.id)) {
-        const existing = fixedObligations.find((entry) => entry.id === obligation.id)
-        if (existing) {
-          plan.updateFixedObligation({
-            ...existing,
-            name: obligation.name,
-            amount: obligation.amount,
-            category: obligation.name,
-          })
-        }
-        return
-      }
-      plan.updateMonthObligation(selectedMonth, obligation)
-    },
-    removeObligation: (id: string) => {
-      if (isFixedObligation(id)) {
-        plan.removeFixedObligation(id)
-        return
-      }
-      plan.removeMonthObligation(selectedMonth, id)
-    },
-  }
-}
-
-export function useDashboardSummary() {
-  const plan = usePlan()
-  const { selectedMonth, isLoading, getMonthPlan, getIncomeMonthlyTotal, fixedObligations } = plan
-  const monthPlan = getMonthPlan(selectedMonth)
-
-  const obligations = useMemo<Obligation[]>(() => {
-    const monthOnly = monthPlan?.obligations ?? []
-    const fromFixed = getActiveMonthlyFixedObligations(fixedObligations)
-      .map((item) => fixedObligationToMonthView(item, selectedMonth))
-      .filter((item) => !monthOnly.some((entry) => entry.id === item.id))
-    return [...monthOnly, ...fromFixed]
-  }, [fixedObligations, monthPlan?.obligations, selectedMonth])
+  // Misma fuente que la página Obligaciones: fijas mensuales activas.
+  // No mezclar con filas legacy is_fixed=false del mes (duplicaban alquiler, etc.).
+  const obligations = useMemo<Obligation[]>(
+    () =>
+      getActiveMonthlyFixedObligations(fixedObligations).map((item) =>
+        fixedObligationToMonthView(item),
+      ),
+    [fixedObligations],
+  )
 
   const summary = useMemo<MonthlySummary>(() => {
     const income = getIncomeMonthlyTotal(selectedMonth)
-    const obligationsTotal =
-      (monthPlan?.obligations.reduce((sum, o) => sum + o.amount, 0) ?? 0) +
-      sumActiveMonthlyFixedObligations(fixedObligations)
-    const investmentGoal = monthPlan?.investmentGoal ?? 0
+    const obligationsTotal = sumActiveMonthlyFixedObligations(fixedObligations)
+    // Misma fuente que Ahorro e Inversiones: suma de lo cargado en el mes.
+    const investmentGoal = investments
+      .filter((entry) => getMonthFromDate(entry.date) === selectedMonth)
+      .reduce((sum, entry) => sum + entry.amount, 0)
     const available = income - obligationsTotal
     const freeMoney = available - investmentGoal
 
@@ -199,7 +94,7 @@ export function useDashboardSummary() {
       investmentGoal,
       freeMoney,
     }
-  }, [monthPlan, selectedMonth, getIncomeMonthlyTotal, fixedObligations])
+  }, [selectedMonth, getIncomeMonthlyTotal, fixedObligations, investments])
 
   return {
     summary,

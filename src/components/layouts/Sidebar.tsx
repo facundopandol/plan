@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import {
   BarChart3,
-  CalendarDays,
   LayoutDashboard,
   PiggyBank,
   Settings,
@@ -15,7 +14,6 @@ import { Separator } from '@/components/ui/separator'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/mes', label: 'Mes', icon: CalendarDays },
   { to: '/ingresos', label: 'Ingresos', icon: Wallet },
   { to: '/obligaciones', label: 'Obligaciones', icon: PiggyBank },
   { to: '/inversiones', label: 'Ahorro e Inversiones', icon: TrendingUp },

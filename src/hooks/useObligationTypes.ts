@@ -1,28 +1,15 @@
 import { useMemo } from 'react'
-import { usePlan } from '@/context/PlanContext'
-import { buildObligationTypeOptions } from '@/utils/obligationMappers'
+import { OBLIGATION_TYPES } from '@/schemas/obligacionSchemas'
+import type { ObligationTypeOption } from '@/types'
 
-export function useObligationTypes() {
-  const plan = usePlan()
-  const { obligationTypes, fixedObligations, monthPlans, addObligationType, removeObligationType } =
-    plan
+export function useObligationTypes(currentType?: string) {
+  const options = useMemo<ObligationTypeOption[]>(() => {
+    const names = new Set<string>(OBLIGATION_TYPES)
+    if (currentType?.trim() && !names.has(currentType.trim())) {
+      names.add(currentType.trim())
+    }
+    return Array.from(names).map((name) => ({ id: name, name }))
+  }, [currentType])
 
-  const monthObligations = useMemo(
-    () => Object.values(monthPlans).flatMap((monthPlan) => monthPlan.obligations),
-    [monthPlans],
-  )
-
-  const options = useMemo(
-    () => buildObligationTypeOptions(obligationTypes, fixedObligations, monthObligations),
-    [obligationTypes, fixedObligations, monthObligations],
-  )
-
-  return {
-    options,
-    managedTypes: obligationTypes,
-    fixedObligations,
-    monthObligations,
-    addType: addObligationType,
-    removeType: removeObligationType,
-  }
+  return { options }
 }

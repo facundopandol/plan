@@ -20,7 +20,14 @@ class Category(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    kind: Mapped[CategoryKind] = mapped_column(Enum(CategoryKind, name="category_kind"), nullable=False)
+    kind: Mapped[CategoryKind] = mapped_column(
+        Enum(
+            CategoryKind,
+            name="category_kind",
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+    )
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     user: Mapped["User"] = relationship(back_populates="categories")

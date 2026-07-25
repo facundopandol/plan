@@ -18,29 +18,29 @@ const variants = {
     value: 'text-foreground',
   },
   income: {
-    card: 'bg-gradient-to-br from-emerald-50/80 to-card',
-    icon: 'bg-emerald-100 text-emerald-700',
-    value: 'text-emerald-700',
+    card: 'bg-gradient-to-br from-emerald-50/80 to-card dark:from-emerald-950/50 dark:to-card',
+    icon: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300',
+    value: 'text-emerald-700 dark:text-emerald-300',
   },
   obligation: {
-    card: 'bg-gradient-to-br from-amber-50/60 to-card',
-    icon: 'bg-amber-100 text-amber-700',
-    value: 'text-amber-700',
+    card: 'bg-gradient-to-br from-amber-50/60 to-card dark:from-amber-950/45 dark:to-card',
+    icon: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300',
+    value: 'text-amber-700 dark:text-amber-300',
   },
   available: {
-    card: 'bg-gradient-to-br from-blue-50/80 to-card',
-    icon: 'bg-blue-100 text-blue-700',
-    value: 'text-blue-700',
+    card: 'bg-gradient-to-br from-blue-50/80 to-card dark:from-blue-950/50 dark:to-card',
+    icon: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300',
+    value: 'text-blue-700 dark:text-blue-300',
   },
   investment: {
-    card: 'bg-gradient-to-br from-violet-50/60 to-card',
-    icon: 'bg-violet-100 text-violet-700',
-    value: 'text-foreground',
+    card: 'bg-gradient-to-br from-violet-50/60 to-card dark:from-violet-950/45 dark:to-card',
+    icon: 'bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-300',
+    value: 'text-violet-700 dark:text-violet-300',
   },
   free: {
-    card: 'bg-gradient-to-br from-teal-50/80 to-card',
-    icon: 'bg-teal-100 text-teal-700',
-    value: 'text-teal-700',
+    card: 'bg-gradient-to-br from-teal-50/80 to-card dark:from-teal-950/50 dark:to-card',
+    icon: 'bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300',
+    value: 'text-teal-700 dark:text-teal-300',
   },
 }
 
@@ -57,7 +57,7 @@ export function DashboardStatCard({
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-2xl border border-border/50 p-5 transition-all duration-300 hover:border-border hover:shadow-md',
+        'group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-5 transition-all duration-300 hover:border-border hover:shadow-md',
         style.card,
         featured && 'sm:col-span-2 lg:col-span-1',
       )}

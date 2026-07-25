@@ -24,6 +24,7 @@ class Obligation(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     due_day: Mapped[int | None] = mapped_column(Integer, nullable=True)
     frequency: Mapped[str | None] = mapped_column(String(20), nullable=True)
     category_name: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    description: Mapped[str | None] = mapped_column(String(120), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     paid: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_fixed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

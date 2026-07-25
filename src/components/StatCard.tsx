@@ -13,16 +13,16 @@ interface StatCardProps {
 
 const accentStyles = {
   default: 'text-foreground',
-  positive: 'text-emerald-600',
-  warning: 'text-amber-600',
-  info: 'text-blue-600',
+  positive: 'text-emerald-600 dark:text-emerald-300',
+  warning: 'text-amber-600 dark:text-amber-300',
+  info: 'text-blue-600 dark:text-blue-300',
 }
 
 const iconStyles = {
   default: 'bg-muted text-muted-foreground',
-  positive: 'bg-emerald-50 text-emerald-600',
-  warning: 'bg-amber-50 text-amber-600',
-  info: 'bg-blue-50 text-blue-600',
+  positive: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/60 dark:text-emerald-300',
+  warning: 'bg-amber-50 text-amber-600 dark:bg-amber-900/60 dark:text-amber-300',
+  info: 'bg-blue-50 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300',
 }
 
 export function StatCard({ title, value, icon: Icon, description, accent = 'default' }: StatCardProps) {

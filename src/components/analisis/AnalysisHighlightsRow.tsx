@@ -17,23 +17,23 @@ export function AnalysisHighlightsRow({ highlights }: AnalysisHighlightsRowProps
         value={formatCurrency(monthlyAverage.income)}
         subtitle={`Dinero libre prom.: ${formatCurrency(monthlyAverage.freeMoney)}`}
         icon={Calculator}
-        iconBg="bg-zinc-100 text-zinc-700"
+        iconBg="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
       />
       <AnalysisStatCard
         title="Mayor ingreso"
         value={formatCurrency(topIncome.amount)}
         subtitle={`${topIncome.description} · ${topIncome.type}`}
         icon={Wallet}
-        accent="text-emerald-600"
-        iconBg="bg-emerald-100 text-emerald-700"
+        accent="text-emerald-600 dark:text-emerald-300"
+        iconBg="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300"
       />
       <AnalysisStatCard
         title="Mayor obligación"
         value={formatCurrency(topObligation.amount)}
         subtitle={`${topObligation.name} · ${topObligation.category}`}
         icon={ArrowDownCircle}
-        accent="text-amber-600"
-        iconBg="bg-amber-100 text-amber-700"
+        accent="text-amber-600 dark:text-amber-300"
+        iconBg="bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300"
       />
       <AnalysisStatCard
         title="Reserva prom."
@@ -44,8 +44,8 @@ export function AnalysisHighlightsRow({ highlights }: AnalysisHighlightsRowProps
             : `Obligaciones prom.: ${formatCurrency(monthlyAverage.obligations)}`
         }
         icon={TrendingUp}
-        accent="text-violet-600"
-        iconBg="bg-violet-100 text-violet-700"
+        accent="text-violet-600 dark:text-violet-300"
+        iconBg="bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-300"
       />
     </div>
   )

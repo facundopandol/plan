@@ -95,7 +95,7 @@ export function IncomesTable({
                 <td className={cn('px-4 py-3.5 font-medium text-muted-foreground')}>
                   {entry.type === 'Otro' ? getIncomeEntryLabel(entry) : '—'}
                 </td>
-                <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-emerald-600">
+                <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-emerald-600 dark:text-emerald-300">
                   {formatCurrency(entry.amount)}
                 </td>
                 <td className="px-4 py-3.5">

@@ -8,9 +8,7 @@ import type {
   Obligation,
   SavingsGoal,
   UserSettings,
-  ObligationTypeOption,
 } from '@/types'
-import { DEFAULT_OBLIGATION_TYPES } from '@/schemas/obligacionSchemas'
 import { ApiError, apiClient } from '@/lib/api/client'
 import {
   buildMonthPlans,
@@ -29,10 +27,8 @@ import {
   monthObligationToApi,
   planIncomeToApi,
   savingsGoalToApi,
-  mapObligationType,
 } from '@/services/api/mappers'
 import type {
-  ApiCategory,
   ApiGoal,
   ApiIncome,
   ApiInvestment,
@@ -53,7 +49,6 @@ export interface PlanState {
   goals: SavingsGoal[]
   investments: InvestmentEntry[]
   monthPlans: Record<string, MonthPlanState>
-  obligationTypes: ObligationTypeOption[]
 }
 
 export function createEmptyPlanState(): PlanState {
@@ -82,7 +77,6 @@ export function createEmptyPlanState(): PlanState {
     goals: [],
     investments: [],
     monthPlans,
-    obligationTypes: [],
   }
 }
 
@@ -93,32 +87,15 @@ async function fetchAll<T>(path: string, params?: Record<string, unknown>): Prom
   return data.items
 }
 
-async function loadObligationTypes(): Promise<ObligationTypeOption[]> {
-  let categories = await fetchAll<ApiCategory>('/categories', { kind: 'obligation' })
-
-  if (categories.length === 0) {
-    await Promise.all(
-      DEFAULT_OBLIGATION_TYPES.map((name) =>
-        apiClient.post<ApiCategory>('/categories', { name, kind: 'obligation' }),
-      ),
-    )
-    categories = await fetchAll<ApiCategory>('/categories', { kind: 'obligation' })
-  }
-
-  return categories.map(mapObligationType)
-}
-
 export const planApi = {
   async loadInitialState(): Promise<PlanState> {
-    const [users, months, incomes, obligations, investments, goals, obligationTypes] =
-      await Promise.all([
+    const [users, months, incomes, obligations, investments, goals] = await Promise.all([
       fetchAll<ApiUser>('/users'),
       fetchAll<ApiMonth>('/months'),
       fetchAll<ApiIncome>('/incomes'),
       fetchAll<ApiObligation>('/obligations'),
       fetchAll<ApiInvestment>('/investments'),
       fetchAll<ApiGoal>('/goals'),
-      loadObligationTypes(),
     ])
 
     const user = users[0]
@@ -153,13 +130,29 @@ export const planApi = {
       goals: goals.map(mapGoal),
       investments: investments.map(mapInvestment),
       monthPlans,
-      obligationTypes,
     }
   },
 
   async updateSettings(userId: string, settings: UserSettings): Promise<UserSettings> {
-    const { data } = await apiClient.put<ApiUser>(`/users/${userId}`, mapSettingsToUserUpdate(settings))
+    const id = userId.trim()
+    if (!id) {
+      throw new ApiError('No se encontró el usuario. Recargá la página e intentá de nuevo.', {
+        status: 400,
+      })
+    }
+    const { data } = await apiClient.put<ApiUser>(`/users/${id}`, mapSettingsToUserUpdate(settings))
     return mapUserToSettings(data)
+  },
+
+  async resolveUserId(): Promise<string> {
+    const users = await fetchAll<ApiUser>('/users')
+    const id = users[0]?.id?.trim()
+    if (!id) {
+      throw new ApiError('No hay usuario configurado. Verificá que el backend esté en ejecución.', {
+        status: 400,
+      })
+    }
+    return id
   },
 
   async ensureMonth(yearMonth: string, monthIdMap: Record<string, string>): Promise<string> {
@@ -289,18 +282,6 @@ export const planApi = {
 
   async deleteMonthObligation(id: string): Promise<void> {
     await apiClient.delete(`/obligations/${id}`)
-  },
-
-  async createObligationType(name: string): Promise<ObligationTypeOption> {
-    const { data } = await apiClient.post<ApiCategory>('/categories', {
-      name,
-      kind: 'obligation',
-    })
-    return mapObligationType(data)
-  },
-
-  async deleteObligationType(id: string): Promise<void> {
-    await apiClient.delete(`/categories/${id}`)
   },
 }
 

@@ -80,14 +80,14 @@ export function IngresosPage() {
         description={`Registrá y administrá los ingresos de ${monthLabel.toLowerCase()}.`}
       />
 
-      <div className="rounded-2xl border border-border/50 bg-gradient-to-br from-emerald-50/60 via-white to-card p-6">
+      <div className="rounded-2xl border border-border/50 bg-gradient-to-br from-emerald-50/60 via-white to-card p-6 dark:from-emerald-950/50 dark:via-card dark:to-card">
         <div className="flex items-center gap-4">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+          <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
             <Wallet className="size-5" />
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Ingreso total del mes</p>
-            <p className="text-3xl font-semibold tabular-nums tracking-tight text-emerald-700">
+            <p className="text-3xl font-semibold tabular-nums tracking-tight text-emerald-700 dark:text-emerald-300">
               {formatCurrency(monthlyTotal)}
             </p>
           </div>

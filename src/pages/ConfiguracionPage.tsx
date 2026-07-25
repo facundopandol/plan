@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, Moon, Palette, PiggyBank, User, Wallet } from 'lucide-react'
+import { Check, Moon, Palette, User, Wallet } from 'lucide-react'
 import { PageListSkeleton } from '@/components/shared/PageListSkeleton'
 import { PageHeader } from '@/components/PageHeader'
 import { ColorPicker } from '@/components/configuracion/ColorPicker'
@@ -26,6 +27,8 @@ import { CURRENCY_OPTIONS } from '@/utils/theme'
 export function ConfiguracionPage() {
   const { isLoading } = usePlan()
   const { settings, saveSettings, isSaved } = useSettings()
+  const [saveError, setSaveError] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
 
   const {
     register,
@@ -38,8 +41,6 @@ export function ConfiguracionPage() {
     values: {
       name: settings.name,
       currency: settings.currency,
-      monthlySavingsGoal: settings.monthlySavingsGoal,
-      monthlyInvestmentGoal: settings.monthlyInvestmentGoal,
       primaryColor: settings.primaryColor,
       darkMode: settings.darkMode,
     },
@@ -49,12 +50,23 @@ export function ConfiguracionPage() {
   const primaryColor = watch('primaryColor')
   const darkMode = watch('darkMode')
 
-  const onSubmit = (data: SettingsFormValues) => {
-    saveSettings({
-      ...settings,
-      ...data,
-      locale: settings.locale,
-    })
+  const onSubmit = async (data: SettingsFormValues) => {
+    setSaveError('')
+    setIsSaving(true)
+    try {
+      await saveSettings({
+        ...settings,
+        name: data.name.trim(),
+        currency: data.currency,
+        primaryColor: data.primaryColor,
+        darkMode: data.darkMode,
+        locale: settings.locale,
+      })
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'No se pudieron guardar los cambios.')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   if (isLoading) {
@@ -74,8 +86,13 @@ export function ConfiguracionPage() {
           description="Tu identidad en la aplicación"
           icon={User}
         >
-          <SettingRow label="Nombre" hint="Cómo te saludamos en el dashboard" htmlFor="name">
-            <Input id="name" {...register('name')} className="bg-background" />
+          <SettingRow label="Nombre" hint="Se usa en el saludo del Dashboard (Buenos días, …)" htmlFor="name">
+            <Input
+              id="name"
+              placeholder="Ej. Juan"
+              {...register('name')}
+              className="bg-background"
+            />
           </SettingRow>
           {errors.name && (
             <p className="px-5 pb-3 text-xs text-destructive">{errors.name.message}</p>
@@ -107,52 +124,6 @@ export function ConfiguracionPage() {
         </SettingCard>
 
         <SettingCard
-          title="Objetivos mensuales"
-          description="Metas de planificación para cada mes"
-          icon={PiggyBank}
-        >
-          <SettingRow
-            label="Objetivo de ahorro"
-            hint="Cuánto querés ahorrar por mes"
-            htmlFor="monthlySavingsGoal"
-          >
-            <Input
-              id="monthlySavingsGoal"
-              type="number"
-              min={0}
-              step={10000}
-              className="bg-background tabular-nums"
-              {...register('monthlySavingsGoal', { valueAsNumber: true })}
-            />
-          </SettingRow>
-          {errors.monthlySavingsGoal && (
-            <p className="px-5 pb-3 text-xs text-destructive">
-              {errors.monthlySavingsGoal.message}
-            </p>
-          )}
-
-          <SettingRow
-            label="Reserva mensual de ahorro / inversión"
-            hint="Cuánto destinás a invertir mensualmente"
-            htmlFor="monthlyInvestmentGoal"
-          >
-            <Input
-              id="monthlyInvestmentGoal"
-              type="number"
-              min={0}
-              step={10000}
-              className="bg-background tabular-nums"
-              {...register('monthlyInvestmentGoal', { valueAsNumber: true })}
-            />
-          </SettingRow>
-          {errors.monthlyInvestmentGoal && (
-            <p className="px-5 pb-3 text-xs text-destructive">
-              {errors.monthlyInvestmentGoal.message}
-            </p>
-          )}
-        </SettingCard>
-
-        <SettingCard
           title="Apariencia"
           description="Personalizá el look & feel"
           icon={Palette}
@@ -177,22 +148,25 @@ export function ConfiguracionPage() {
           </SettingRow>
         </SettingCard>
 
-        <div className="sticky bottom-4 flex items-center justify-between rounded-xl border border-border/50 bg-card/95 px-5 py-3 shadow-sm backdrop-blur-sm">
-          <p className="text-xs text-muted-foreground">
-            {isSaved ? (
-              <span className="flex items-center gap-1.5 text-emerald-600">
-                <Check className="size-3.5" />
-                Cambios guardados
-              </span>
-            ) : isDirty ? (
-              'Tenés cambios sin guardar'
-            ) : (
-              'Configuración al día'
-            )}
-          </p>
-          <Button type="submit" disabled={!isDirty}>
-            Guardar cambios
-          </Button>
+        <div className="sticky bottom-4 space-y-2 rounded-xl border border-border/50 bg-card/95 px-5 py-3 shadow-sm backdrop-blur-sm">
+          {saveError ? <p className="text-xs text-destructive">{saveError}</p> : null}
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs text-muted-foreground">
+              {isSaved ? (
+                <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-300">
+                  <Check className="size-3.5" />
+                  Cambios guardados
+                </span>
+              ) : isDirty ? (
+                'Tenés cambios sin guardar'
+              ) : (
+                'Configuración al día'
+              )}
+            </p>
+            <Button type="submit" disabled={!isDirty || isSaving}>
+              {isSaving ? 'Guardando…' : 'Guardar cambios'}
+            </Button>
+          </div>
         </div>
       </form>
     </div>

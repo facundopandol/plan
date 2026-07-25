@@ -84,7 +84,8 @@ export function usePlanProvider() {
   } = useQuery({
     queryKey: planKeys.state(),
     queryFn: () => planApi.loadInitialState(),
-    initialData: createEmptyPlanState,
+    // placeholderData: no se persiste como dato "real"; evita guardar con userId vacío
+    placeholderData: () => createEmptyPlanState(),
     retry: 2,
     staleTime: 30_000,
   })
@@ -120,21 +121,34 @@ export function usePlanProvider() {
   )
 
   const saveSettings = useCallback(
-    (next: UserSettings) => {
+    async (next: UserSettings) => {
       const previous = ensurePlanState(queryClient)
-      patchPlanState(queryClient, (state) => ({ ...state, settings: next }))
+      let userId = previous.userId.trim()
+
+      if (!userId) {
+        try {
+          userId = await planApi.resolveUserId()
+          patchPlanState(queryClient, (state) => ({ ...state, userId }))
+        } catch (err) {
+          setIsSettingsSaved(false)
+          throw err
+        }
+      }
+
+      patchPlanState(queryClient, (state) => ({ ...state, settings: next, userId }))
       applyTheme(next)
       setIsSettingsSaved(true)
 
-      void planApi
-        .updateSettings(previous.userId, next)
-        .then((settings) => {
-          patchPlanState(queryClient, (state) => ({ ...state, settings }))
-        })
-        .catch((err) => rollbackOnError(previous, err))
-        .finally(() => {
-          setTimeout(() => setIsSettingsSaved(false), 2500)
-        })
+      try {
+        const settings = await planApi.updateSettings(userId, next)
+        patchPlanState(queryClient, (state) => ({ ...state, settings, userId }))
+      } catch (err) {
+        rollbackOnError(previous, err)
+        setIsSettingsSaved(false)
+        throw err
+      }
+
+      setTimeout(() => setIsSettingsSaved(false), 2500)
     },
     [queryClient, rollbackOnError],
   )
@@ -595,50 +609,6 @@ export function usePlanProvider() {
     [rollbackOnError, updateMonthPlan],
   )
 
-  const addObligationType = useCallback(
-    (name: string) => {
-      const previous = ensurePlanState(queryClient)
-      const trimmed = name.trim()
-      if (!trimmed) return
-
-      if (previous.obligationTypes.some((item) => item.name.toLowerCase() === trimmed.toLowerCase())) {
-        return
-      }
-
-      const tempId = generateId()
-      patchPlanState(queryClient, (state) => ({
-        ...state,
-        obligationTypes: [...state.obligationTypes, { id: tempId, name: trimmed }],
-      }))
-
-      void planApi
-        .createObligationType(trimmed)
-        .then((created) => {
-          patchPlanState(queryClient, (state) => ({
-            ...state,
-            obligationTypes: state.obligationTypes.map((item) =>
-              item.id === tempId ? created : item,
-            ),
-          }))
-        })
-        .catch((err) => rollbackOnError(previous, err))
-    },
-    [queryClient, rollbackOnError],
-  )
-
-  const removeObligationType = useCallback(
-    (id: string) => {
-      const previous = ensurePlanState(queryClient)
-      patchPlanState(queryClient, (state) => ({
-        ...state,
-        obligationTypes: state.obligationTypes.filter((item) => item.id !== id),
-      }))
-
-      void planApi.deleteObligationType(id).catch((err) => rollbackOnError(previous, err))
-    },
-    [queryClient, rollbackOnError],
-  )
-
   return useMemo(
     () => ({
       isLoading: isPending,
@@ -663,7 +633,6 @@ export function usePlanProvider() {
       goals: data?.goals ?? [],
       investments: data?.investments ?? [],
       monthPlans: data?.monthPlans ?? {},
-      obligationTypes: data?.obligationTypes ?? [],
       setSelectedMonth,
       saveSettings,
       getIncomeEntriesForMonth,
@@ -688,8 +657,6 @@ export function usePlanProvider() {
       addMonthObligation,
       updateMonthObligation,
       removeMonthObligation,
-      addObligationType,
-      removeObligationType,
     }),
     [
       isPending,
@@ -723,8 +690,6 @@ export function usePlanProvider() {
       addMonthObligation,
       updateMonthObligation,
       removeMonthObligation,
-      addObligationType,
-      removeObligationType,
     ],
   )
 }

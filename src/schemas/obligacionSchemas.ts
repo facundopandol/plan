@@ -1,32 +1,28 @@
 import { z } from 'zod'
 
-export const DEFAULT_OBLIGATION_TYPES = [
+export const OBLIGATION_TYPES = [
   'Alquiler',
   'Expensas',
   'Servicios',
-  'Salud',
+  'Tarjetas',
   'Transporte',
-  'Educación',
-  'Suscripciones',
-  'Deuda',
+  'Otro',
 ] as const
 
-export const OBLIGATION_FREQUENCIES = ['Mensual', 'Anual', 'Única'] as const
+export type ObligationType = (typeof OBLIGATION_TYPES)[number]
+
+export const OBLIGATION_FREQUENCIES = ['Mensual', 'Anual'] as const
 
 export const fixedObligationFormSchema = z.object({
-  type: z.string().min(1, 'Seleccioná un tipo'),
+  type: z.enum(OBLIGATION_TYPES, { message: 'Seleccioná un tipo' }),
+  description: z.string().max(120, 'Máximo 120 caracteres'),
   amount: z.number().positive('El monto debe ser mayor a 0'),
   frequency: z.enum(OBLIGATION_FREQUENCIES, { message: 'Seleccioná una frecuencia' }),
-  dueDay: z
-    .number()
-    .int('Debe ser un número entero')
-    .min(1, 'El día mínimo es 1')
-    .max(31, 'El día máximo es 31'),
   active: z.boolean(),
 })
 
 export type FixedObligationFormValues = z.infer<typeof fixedObligationFormSchema>
 
-export type ObligationSortField = 'name' | 'amount' | 'frequency' | 'dueDay' | 'active'
+export type ObligationSortField = 'name' | 'amount' | 'frequency' | 'active'
 
 export type SortDirection = 'asc' | 'desc'

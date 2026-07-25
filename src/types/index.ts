@@ -20,12 +20,11 @@ export interface Obligation {
   id: string
   name: string
   amount: number
-  dueDate: string
   category: string
-  paid: boolean
+  description?: string
 }
 
-export type ObligationFrequency = 'Mensual' | 'Anual' | 'Única'
+export type ObligationFrequency = 'Mensual' | 'Anual'
 
 export type ObligationCategory = string
 
@@ -38,9 +37,9 @@ export interface FixedObligation {
   id: string
   name: string
   category: ObligationCategory
+  description?: string
   amount: number
   frequency: ObligationFrequency
-  dueDay: number
   active: boolean
 }
 

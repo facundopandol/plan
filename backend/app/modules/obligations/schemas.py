@@ -14,6 +14,7 @@ class ObligationBase(ORMModel):
     due_day: int | None = Field(default=None, ge=1, le=31)
     frequency: str | None = Field(default=None, max_length=20)
     category_name: str | None = Field(default=None, max_length=50)
+    description: str | None = Field(default=None, max_length=120)
     month_id: UUID | None = None
     category_id: UUID | None = None
     active: bool = True
@@ -32,6 +33,7 @@ class ObligationUpdate(ORMModel):
     due_day: int | None = Field(default=None, ge=1, le=31)
     frequency: str | None = Field(default=None, max_length=20)
     category_name: str | None = Field(default=None, max_length=50)
+    description: str | None = Field(default=None, max_length=120)
     month_id: UUID | None = None
     category_id: UUID | None = None
     active: bool | None = None

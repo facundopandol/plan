@@ -12,7 +12,6 @@ import type {
   MonthPlanState,
   Obligation,
   ObligationCategory,
-  ObligationTypeOption,
   ObligationFrequency,
   PrimaryColor,
   SavingsGoal,
@@ -25,7 +24,6 @@ import type {
   ApiMonth,
   ApiObligation,
   ApiUser,
-  ApiCategory,
 } from '@/services/api/types'
 
 export const toNumber = (value: string | number): number => Number(value)
@@ -79,13 +77,15 @@ export function mapIncomeToPlanItem(income: ApiIncome): Income {
 }
 
 export function mapObligationToFixed(obligation: ApiObligation): FixedObligation {
+  const category = obligation.category_name ?? 'Otro'
+  const description = obligation.description ?? undefined
   return {
     id: obligation.id,
     name: obligation.name,
-    category: (obligation.category_name ?? 'Otros') as ObligationCategory,
+    category: category as ObligationCategory,
+    description,
     amount: toNumber(obligation.amount),
     frequency: (obligation.frequency ?? 'Mensual') as ObligationFrequency,
-    dueDay: obligation.due_day ?? 1,
     active: obligation.active,
   }
 }
@@ -95,9 +95,8 @@ export function mapObligationToMonth(obligation: ApiObligation): Obligation {
     id: obligation.id,
     name: obligation.name,
     amount: toNumber(obligation.amount),
-    dueDate: obligation.due_date ?? '',
-    category: obligation.category_name ?? 'Otros',
-    paid: obligation.paid,
+    category: obligation.category_name ?? 'Otro',
+    description: obligation.description ?? undefined,
   }
 }
 
@@ -154,8 +153,9 @@ export function fixedObligationToApi(entry: Omit<FixedObligation, 'id'>) {
     name: entry.name,
     amount: entry.amount,
     category_name: entry.category,
+    description: entry.description ?? null,
     frequency: entry.frequency,
-    due_day: entry.dueDay,
+    due_day: null,
     active: entry.active,
     is_fixed: true,
     paid: false,
@@ -166,9 +166,10 @@ export function monthObligationToApi(obligation: Omit<Obligation, 'id'>, monthId
   return {
     name: obligation.name,
     amount: obligation.amount,
-    due_date: obligation.dueDate,
+    due_date: null,
     category_name: obligation.category,
-    paid: obligation.paid,
+    description: obligation.description ?? null,
+    paid: false,
     is_fixed: false,
     month_id: monthId,
     active: true,
@@ -194,13 +195,6 @@ export function savingsGoalToApi(goal: Omit<SavingsGoal, 'id'>) {
     target_date: goal.targetDate,
     icon: goal.icon,
     color: goal.color,
-  }
-}
-
-export function mapObligationType(category: ApiCategory): ObligationTypeOption {
-  return {
-    id: category.id,
-    name: category.name,
   }
 }
 

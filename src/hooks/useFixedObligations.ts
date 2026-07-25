@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import type { FixedObligation, ObligationFrequency } from '@/types'
 import type { ObligationSortField, SortDirection } from '@/schemas/obligacionSchemas'
+import { OBLIGATION_TYPES } from '@/schemas/obligacionSchemas'
 import { useFixedObligationsData, usePlan } from '@/hooks/usePlan'
-import { useObligationTypes } from '@/hooks/useObligationTypes'
+import { obligationMatchesSearch } from '@/utils/obligationMappers'
 
 function compareValues(
   a: FixedObligation,
@@ -19,8 +20,6 @@ function compareValues(
       return (a.amount - b.amount) * factor
     case 'frequency':
       return a.frequency.localeCompare(b.frequency, 'es') * factor
-    case 'dueDay':
-      return (a.dueDay - b.dueDay) * factor
     case 'active':
       return (Number(a.active) - Number(b.active)) * factor
     default:
@@ -30,7 +29,6 @@ function compareValues(
 
 export function useFixedObligations() {
   const { isLoading } = usePlan()
-  const { options } = useObligationTypes()
   const { obligations, addObligation, updateObligation, removeObligation } =
     useFixedObligationsData()
 
@@ -40,18 +38,15 @@ export function useFixedObligations() {
   const [sortField, setSortField] = useState<ObligationSortField>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
-  const typeNames = useMemo(() => options.map((item) => item.name), [options])
+  const typeNames = useMemo(() => [...OBLIGATION_TYPES], [])
 
   const filteredObligations = useMemo(() => {
     const query = search.trim().toLowerCase()
 
     return obligations
       .filter((item) => {
-        const matchesSearch =
-          !query ||
-          item.name.toLowerCase().includes(query) ||
-          item.category.toLowerCase().includes(query)
-        const matchesType = typeFilter === 'all' || item.name === typeFilter
+        const matchesSearch = obligationMatchesSearch(item, query)
+        const matchesType = typeFilter === 'all' || item.category === typeFilter
         const matchesFrequency = frequencyFilter === 'all' || item.frequency === frequencyFilter
         return matchesSearch && matchesType && matchesFrequency
       })

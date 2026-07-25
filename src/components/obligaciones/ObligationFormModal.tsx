@@ -41,7 +41,7 @@ export function ObligationFormModal({
   onSubmit,
 }: ObligationFormModalProps) {
   const isEditing = Boolean(obligation)
-  const { options } = useObligationTypes()
+  const { options } = useObligationTypes(obligation?.category)
 
   const {
     register,
@@ -53,10 +53,10 @@ export function ObligationFormModal({
   } = useForm<FixedObligationFormValues>({
     resolver: zodResolver(fixedObligationFormSchema),
     defaultValues: {
-      type: options[0]?.name ?? '',
+      type: 'Alquiler',
+      description: '',
       amount: 0,
       frequency: 'Mensual',
-      dueDay: 1,
       active: true,
     },
   })
@@ -70,27 +70,33 @@ export function ObligationFormModal({
       reset(
         obligation
           ? {
-              ...parseObligationToForm(obligation.name),
+              ...parseObligationToForm(obligation),
               amount: obligation.amount,
-              frequency: obligation.frequency,
-              dueDay: obligation.dueDay,
+              frequency: obligation.frequency === 'Anual' ? 'Anual' : 'Mensual',
               active: obligation.active,
             }
           : {
-              type: options[0]?.name ?? '',
+              type: 'Alquiler',
+              description: '',
               amount: 0,
               frequency: 'Mensual',
-              dueDay: 1,
               active: true,
             },
       )
     }
-  }, [open, obligation, options, reset])
+  }, [open, obligation, reset])
 
   const onFormSubmit = (values: FixedObligationFormValues) => {
     onSubmit(values)
     onOpenChange(false)
   }
+
+  const descriptionPlaceholder =
+    type === 'Tarjetas'
+      ? 'Ej. Visa, Amex, Master...'
+      : type === 'Servicios'
+        ? 'Ej. Luz, Gas, Internet...'
+        : 'Detalle opcional'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -99,19 +105,15 @@ export function ObligationFormModal({
           <DialogTitle>{isEditing ? 'Editar obligación' : 'Nueva obligación'}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Modificá los datos de esta obligación fija.'
-              : 'Registrá un compromiso financiero recurrente o puntual.'}
+              ? 'Modificá el monto y la frecuencia de este compromiso.'
+              : 'Definí cuánto reservar por tipo. Solo montos, sin fechas de pago.'}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label>Tipo</Label>
-            <Select
-              value={type}
-              onValueChange={(v) => setValue('type', v)}
-              disabled={options.length === 0}
-            >
+            <Select value={type} onValueChange={(v) => setValue('type', v as FixedObligationFormValues['type'])}>
               <SelectTrigger>
                 <SelectValue placeholder="Seleccionar" />
               </SelectTrigger>
@@ -123,12 +125,19 @@ export function ObligationFormModal({
                 ))}
               </SelectContent>
             </Select>
-            {options.length === 0 && (
-              <p className="text-xs text-muted-foreground">
-                Agregá tipos desde &quot;Editar tipos&quot; antes de crear una obligación.
-              </p>
-            )}
             {errors.type && <p className="text-xs text-destructive">{errors.type.message}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="obligation-description">Detalle (opcional)</Label>
+            <Input
+              id="obligation-description"
+              placeholder={descriptionPlaceholder}
+              {...register('description')}
+            />
+            {errors.description && (
+              <p className="text-xs text-destructive">{errors.description.message}</p>
+            )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -157,32 +166,18 @@ export function ObligationFormModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="obligation-dueDay">Día de vencimiento</Label>
+              <Label htmlFor="obligation-amount">Monto</Label>
               <Input
-                id="obligation-dueDay"
+                id="obligation-amount"
                 type="number"
-                min={1}
-                max={31}
-                {...register('dueDay', { valueAsNumber: true })}
+                min={0}
+                step={1000}
+                {...register('amount', { valueAsNumber: true })}
               />
-              {errors.dueDay && (
-                <p className="text-xs text-destructive">{errors.dueDay.message}</p>
+              {errors.amount && (
+                <p className="text-xs text-destructive">{errors.amount.message}</p>
               )}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="obligation-amount">Monto</Label>
-            <Input
-              id="obligation-amount"
-              type="number"
-              min={0}
-              step={1000}
-              {...register('amount', { valueAsNumber: true })}
-            />
-            {errors.amount && (
-              <p className="text-xs text-destructive">{errors.amount.message}</p>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -205,9 +200,7 @@ export function ObligationFormModal({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={options.length === 0}>
-              {isEditing ? 'Guardar cambios' : 'Crear obligación'}
-            </Button>
+            <Button type="submit">{isEditing ? 'Guardar cambios' : 'Crear obligación'}</Button>
           </div>
         </form>
       </DialogContent>

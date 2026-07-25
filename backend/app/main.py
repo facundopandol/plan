@@ -66,6 +66,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
+    # En desarrollo Vite puede saltar de 5173 a 5174/5175 si el puerto está ocupado.
+    allow_origin_regex=(
+        r"http://(localhost|127\.0\.0\.1):\d+"
+        if settings.app_env == "development" or settings.debug
+        else None
+    ),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

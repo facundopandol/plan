@@ -51,6 +51,7 @@ export interface ApiObligation {
   due_day: number | null
   frequency: string | null
   category_name: string | null
+  description: string | null
   active: boolean
   paid: boolean
   is_fixed: boolean
