@@ -43,7 +43,7 @@ export function buildAnalyticsFromPlan(
     (entry) => getMonthFromDate(entry.date) === focusMonth,
   )
 
-  const savingsDistribution = computeDestinationDistribution(monthEntries, state.goals)
+  const savingsDistribution = computeDestinationDistribution(monthEntries)
 
   const categoryTotals = new Map<string, number>()
   for (const obligation of monthObligations) {
@@ -128,7 +128,7 @@ export function buildAnalyticsFromPlan(
       },
       topDestination: topDestination
         ? {
-            name: getDestinationLabel(topDestination, state.goals),
+            name: getDestinationLabel(topDestination),
             amount: topDestination.amount,
           }
         : undefined,

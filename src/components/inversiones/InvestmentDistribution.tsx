@@ -13,7 +13,9 @@ export function InvestmentDistribution({ items, total }: InvestmentDistributionP
   if (total === 0 || items.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border/60 px-5 py-8 text-center">
-        <p className="text-sm text-muted-foreground">Todavía no registraste destinos para este mes</p>
+        <p className="text-sm text-muted-foreground">
+          Todavía no registraste ahorro ni inversión este mes
+        </p>
       </div>
     )
   }
@@ -23,13 +25,13 @@ export function InvestmentDistribution({ items, total }: InvestmentDistributionP
       <div className="mb-4">
         <h3 className="text-sm font-semibold tracking-tight">Distribución del mes</h3>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          Cómo repartiste el capital reservado
+          Cuánto fue a ahorro y cuánto a inversión
         </p>
       </div>
 
       <div className="space-y-3">
         {items.map((item) => {
-          const styles = getDestinationStyle('Otro')
+          const styles = getDestinationStyle(item.label)
           return (
             <div
               key={item.label}

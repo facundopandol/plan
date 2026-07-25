@@ -31,15 +31,7 @@ export interface FixedObligation {
   amount: number
 }
 
-export type DestinationType =
-  | 'CEDEAR'
-  | 'ETF'
-  | 'FCI'
-  | 'Dólar MEP'
-  | 'Plazo fijo'
-  | 'Criptomonedas'
-  | 'Objetivo personal'
-  | 'Otro'
+export type DestinationType = 'Ahorro' | 'Inversión'
 
 /** @deprecated Use DestinationType */
 export type InvestmentType = DestinationType

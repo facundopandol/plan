@@ -6,7 +6,6 @@ import type {
   IncomeEntry,
   IncomeType,
   InvestmentEntry,
-  InvestmentType,
   MonthOption,
   ObligationCategory,
   PrimaryColor,
@@ -21,6 +20,7 @@ import type {
   ApiObligation,
   ApiUser,
 } from '@/services/api/types'
+import { normalizeDestinationType } from '@/utils/investment'
 
 export const toNumber = (value: string | number): number => Number(value)
 
@@ -78,7 +78,7 @@ export function mapInvestment(investment: ApiInvestment): InvestmentEntry {
   return {
     id: investment.id,
     date: investment.date,
-    type: investment.investment_type as InvestmentType,
+    type: normalizeDestinationType(investment.investment_type),
     amount: toNumber(investment.amount),
     comment: investment.comment || undefined,
     goalId: investment.goal_id ?? undefined,

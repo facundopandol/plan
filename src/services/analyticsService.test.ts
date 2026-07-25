@@ -46,7 +46,7 @@ function makeState(overrides: Partial<PlanState> = {}): PlanState {
       {
         id: 'inv-1',
         date: '2026-07-05',
-        type: 'ETF',
+        type: 'Inversión',
         amount: 100_000,
       },
     ],

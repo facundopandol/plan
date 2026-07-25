@@ -40,7 +40,7 @@ export function AnalysisHighlightsRow({ highlights }: AnalysisHighlightsRowProps
         value={formatCurrency(monthlyAverage.reserved)}
         subtitle={
           topDestination
-            ? `Mayor destino: ${topDestination.name}`
+            ? `Mayor tipo: ${topDestination.name}`
             : `Obligaciones prom.: ${formatCurrency(monthlyAverage.obligations)}`
         }
         icon={TrendingUp}

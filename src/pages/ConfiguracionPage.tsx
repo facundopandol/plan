@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { usePlan, useSettings } from '@/hooks/usePlan'
+import { getActionErrorMessage, useToast } from '@/context/ToastContext'
 import {
   settingsFormSchema,
   type SettingsFormValues,
@@ -26,6 +27,7 @@ import { localeForCurrency } from '@/utils/format'
 import { CURRENCY_OPTIONS } from '@/utils/theme'
 
 export function ConfiguracionPage() {
+  const { toast } = useToast()
   const { isLoading } = usePlan()
   const { settings, saveSettings, isSaved } = useSettings()
   const [saveError, setSaveError] = useState('')
@@ -67,8 +69,11 @@ export function ConfiguracionPage() {
         darkMode: data.darkMode,
         locale: localeForCurrency(data.currency),
       })
+      toast.success('Configuración guardada')
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'No se pudieron guardar los cambios.')
+      const message = getActionErrorMessage(err, 'No se pudieron guardar los cambios.')
+      setSaveError(message)
+      toast.error('No se pudo guardar', message)
     } finally {
       setIsSaving(false)
     }

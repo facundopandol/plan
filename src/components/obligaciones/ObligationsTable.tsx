@@ -1,17 +1,21 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowDownCircle, ArrowUp, ArrowUpDown, Pencil, Plus, SearchX, Trash2 } from 'lucide-react'
 import type { FixedObligation } from '@/types'
 import type { ObligationSortField, SortDirection } from '@/schemas/obligacionSchemas'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/utils/format'
 
 interface ObligationsTableProps {
   obligations: FixedObligation[]
+  totalCount: number
   sortField: ObligationSortField
   sortDirection: SortDirection
   onSort: (field: ObligationSortField) => void
   onEdit: (obligation: FixedObligation) => void
   onDelete: (obligation: FixedObligation) => void
+  onCreate: () => void
+  onClearFilters: () => void
 }
 
 const columns: { key: ObligationSortField; label: string; className?: string }[] = [
@@ -21,20 +25,43 @@ const columns: { key: ObligationSortField; label: string; className?: string }[]
 
 export function ObligationsTable({
   obligations,
+  totalCount,
   sortField,
   sortDirection,
   onSort,
   onEdit,
   onDelete,
+  onCreate,
+  onClearFilters,
 }: ObligationsTableProps) {
   if (obligations.length === 0) {
+    if (totalCount === 0) {
+      return (
+        <EmptyState
+          icon={ArrowDownCircle}
+          title="Todavía no cargaste obligaciones"
+          description="Agregá alquiler, servicios, tarjetas y otros compromisos que se repiten cada mes."
+          action={
+            <Button className="gap-2" onClick={onCreate}>
+              <Plus className="size-4" />
+              Nueva obligación
+            </Button>
+          }
+        />
+      )
+    }
+
     return (
-      <div className="rounded-2xl border border-dashed border-border/60 py-16 text-center">
-        <p className="text-sm font-medium">No se encontraron obligaciones</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Probá ajustar los filtros o creá una nueva obligación.
-        </p>
-      </div>
+      <EmptyState
+        icon={SearchX}
+        title="Ninguna obligación coincide"
+        description="Probá otro tipo o limpiá la búsqueda para ver todas."
+        action={
+          <Button variant="outline" onClick={onClearFilters}>
+            Limpiar filtros
+          </Button>
+        }
+      />
     )
   }
 

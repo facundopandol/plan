@@ -8,15 +8,16 @@ import { InvestmentDistribution } from '@/components/inversiones/InvestmentDistr
 import { InvestmentEntriesList } from '@/components/inversiones/InvestmentEntriesList'
 import { InvestmentFormModal } from '@/components/inversiones/InvestmentFormModal'
 import { InvestmentMonthlyTotal } from '@/components/inversiones/InvestmentMonthlyTotal'
+import { getActionErrorMessage, useToast } from '@/context/ToastContext'
 import { useMonthOptions, useSelectedMonth } from '@/hooks/usePlan'
 import { useInvestmentEntries } from '@/hooks/useInvestmentEntries'
 
 export function InversionesPage() {
+  const { toast } = useToast()
   const { selectedMonth } = useSelectedMonth()
   const months = useMonthOptions()
   const {
     isLoading,
-    goals,
     entries,
     monthlyTotal,
     distribution,
@@ -48,19 +49,46 @@ export function InversionesPage() {
     setDeleteOpen(true)
   }
 
-  const handleFormSubmit = (values: InvestmentEntryFormValues) => {
-    if (editing) {
-      editEntry({ ...editing, ...values, comment: values.comment ?? '' })
-    } else {
-      createEntry({ ...values, comment: values.comment ?? '' })
+  const handleFormSubmit = async (values: InvestmentEntryFormValues) => {
+    const payload = {
+      date: values.date,
+      type: values.type,
+      amount: values.amount,
+      comment: values.comment?.trim() || undefined,
+      goalId: undefined,
+      personalName: undefined,
+    }
+
+    try {
+      if (editing) {
+        await editEntry({ ...editing, ...payload })
+        toast.success('Movimiento actualizado')
+      } else {
+        await createEntry(payload)
+        toast.success(
+          values.type === 'Ahorro' ? 'Ahorro registrado' : 'Inversión registrada',
+        )
+      }
+    } catch (err) {
+      toast.error(
+        'No se pudo guardar el movimiento',
+        getActionErrorMessage(err, 'Intentá de nuevo.'),
+      )
     }
   }
 
-  const handleDeleteConfirm = () => {
-    if (deleting) {
-      deleteEntry(deleting.id)
+  const handleDeleteConfirm = async () => {
+    if (!deleting) return
+    try {
+      await deleteEntry(deleting.id)
       setDeleteOpen(false)
       setDeleting(null)
+      toast.success('Movimiento eliminado')
+    } catch (err) {
+      toast.error(
+        'No se pudo eliminar el movimiento',
+        getActionErrorMessage(err, 'Intentá de nuevo.'),
+      )
     }
   }
 
@@ -72,7 +100,7 @@ export function InversionesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Ahorro e Inversiones"
-        description="Registrá cómo distribuís el capital que reservaste para ahorro e inversiones este mes."
+        description="Seguí cuánto reservaste este mes: solo ahorro o inversión, sin detalle del instrumento."
       />
 
       <InvestmentMonthlyTotal total={monthlyTotal} monthLabel={monthLabel} />
@@ -81,7 +109,6 @@ export function InversionesPage() {
 
       <InvestmentEntriesList
         entries={entries}
-        goals={goals}
         onNew={openCreate}
         onEdit={openEdit}
         onDelete={openDelete}

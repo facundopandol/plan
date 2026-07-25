@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
-import { Wallet } from 'lucide-react'
+import { ArrowDownCircle, Plus } from 'lucide-react'
 import type { Obligation } from '@/types'
+import { EmptyState } from '@/components/shared/EmptyState'
+import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/utils/format'
 
 interface MonthObligationsSummaryProps {
@@ -19,9 +21,9 @@ export function MonthObligationsSummary({ obligations }: MonthObligationsSummary
     <div className="flex h-full flex-col rounded-2xl border border-border/50 bg-card p-6">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-base font-semibold tracking-tight">Obligaciones del mes</h2>
+          <h2 className="text-base font-semibold tracking-tight">Obligaciones</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Compromisos planificados · {formatCurrency(total)}
+            Compromisos de cada mes · {formatCurrency(total)}
           </p>
         </div>
         <Link
@@ -33,13 +35,21 @@ export function MonthObligationsSummary({ obligations }: MonthObligationsSummary
       </div>
 
       {items.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-border/60 py-10 text-center">
-          <Wallet className="mb-3 size-8 text-muted-foreground/40" />
-          <p className="text-sm font-medium">Sin obligaciones cargadas</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Cargalas en la pestaña Obligaciones
-          </p>
-        </div>
+        <EmptyState
+          icon={ArrowDownCircle}
+          compact
+          className="flex-1 rounded-xl"
+          title="Sin obligaciones todavía"
+          description="Agregá alquiler, servicios o tarjetas para ver cuánto tenés comprometido cada mes."
+          action={
+            <Button asChild className="gap-2">
+              <Link to="/obligaciones">
+                <Plus className="size-4" />
+                Agregar obligación
+              </Link>
+            </Button>
+          }
+        />
       ) : (
         <ul className="space-y-2">
           {items.map((item) => (

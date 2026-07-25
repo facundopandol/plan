@@ -169,7 +169,7 @@ export function usePlanProvider() {
   )
 
   const addIncome = useCallback(
-    (entry: Omit<IncomeEntry, 'id'>) => {
+    async (entry: Omit<IncomeEntry, 'id'>) => {
       const previous = ensurePlanState(queryClient)
       const tempId = generateId()
       patchPlanState(queryClient, (state) => ({
@@ -177,47 +177,58 @@ export function usePlanProvider() {
         incomes: [...state.incomes, { ...entry, id: tempId }],
       }))
 
-      void planApi
-        .createIncome(entry)
-        .then((created) => {
-          patchPlanState(queryClient, (state) => ({
-            ...state,
-            incomes: state.incomes.map((item) => (item.id === tempId ? created : item)),
-          }))
-        })
-        .catch((err) => rollbackOnError(previous, err))
+      try {
+        const created = await planApi.createIncome(entry)
+        patchPlanState(queryClient, (state) => ({
+          ...state,
+          incomes: state.incomes.map((item) => (item.id === tempId ? created : item)),
+        }))
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const updateIncome = useCallback(
-    (entry: IncomeEntry) => {
+    async (entry: IncomeEntry) => {
       const previous = ensurePlanState(queryClient)
       patchPlanState(queryClient, (state) => ({
         ...state,
         incomes: state.incomes.map((item) => (item.id === entry.id ? entry : item)),
       }))
 
-      void planApi.updateIncome(entry).catch((err) => rollbackOnError(previous, err))
+      try {
+        await planApi.updateIncome(entry)
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const removeIncome = useCallback(
-    (id: string) => {
+    async (id: string) => {
       const previous = ensurePlanState(queryClient)
       patchPlanState(queryClient, (state) => ({
         ...state,
         incomes: state.incomes.filter((item) => item.id !== id),
       }))
 
-      void planApi.deleteIncome(id).catch((err) => rollbackOnError(previous, err))
+      try {
+        await planApi.deleteIncome(id)
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const addFixedObligation = useCallback(
-    (entry: Omit<FixedObligation, 'id'>) => {
+    async (entry: Omit<FixedObligation, 'id'>) => {
       const previous = ensurePlanState(queryClient)
       const tempId = generateId()
       patchPlanState(queryClient, (state) => ({
@@ -225,49 +236,62 @@ export function usePlanProvider() {
         fixedObligations: [...state.fixedObligations, { ...entry, id: tempId }],
       }))
 
-      void planApi
-        .createFixedObligation(entry)
-        .then((created) => {
-          patchPlanState(queryClient, (state) => ({
-            ...state,
-            fixedObligations: state.fixedObligations.map((item) =>
-              item.id === tempId ? created : item,
-            ),
-          }))
-        })
-        .catch((err) => rollbackOnError(previous, err))
+      try {
+        const created = await planApi.createFixedObligation(entry)
+        patchPlanState(queryClient, (state) => ({
+          ...state,
+          fixedObligations: state.fixedObligations.map((item) =>
+            item.id === tempId ? created : item,
+          ),
+        }))
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const updateFixedObligation = useCallback(
-    (entry: FixedObligation) => {
+    async (entry: FixedObligation) => {
       const previous = ensurePlanState(queryClient)
       patchPlanState(queryClient, (state) => ({
         ...state,
-        fixedObligations: state.fixedObligations.map((item) => (item.id === entry.id ? entry : item)),
+        fixedObligations: state.fixedObligations.map((item) =>
+          item.id === entry.id ? entry : item,
+        ),
       }))
 
-      void planApi.updateFixedObligation(entry).catch((err) => rollbackOnError(previous, err))
+      try {
+        await planApi.updateFixedObligation(entry)
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const removeFixedObligation = useCallback(
-    (id: string) => {
+    async (id: string) => {
       const previous = ensurePlanState(queryClient)
       patchPlanState(queryClient, (state) => ({
         ...state,
         fixedObligations: state.fixedObligations.filter((item) => item.id !== id),
       }))
 
-      void planApi.deleteFixedObligation(id).catch((err) => rollbackOnError(previous, err))
+      try {
+        await planApi.deleteFixedObligation(id)
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const addGoal = useCallback(
-    (goal: Omit<SavingsGoal, 'id'>) => {
+    async (goal: Omit<SavingsGoal, 'id'>) => {
       const previous = ensurePlanState(queryClient)
       const tempId = generateId()
       patchPlanState(queryClient, (state) => ({
@@ -275,47 +299,58 @@ export function usePlanProvider() {
         goals: [...state.goals, { ...goal, id: tempId }],
       }))
 
-      void planApi
-        .createGoal(goal)
-        .then((created) => {
-          patchPlanState(queryClient, (state) => ({
-            ...state,
-            goals: state.goals.map((item) => (item.id === tempId ? created : item)),
-          }))
-        })
-        .catch((err) => rollbackOnError(previous, err))
+      try {
+        const created = await planApi.createGoal(goal)
+        patchPlanState(queryClient, (state) => ({
+          ...state,
+          goals: state.goals.map((item) => (item.id === tempId ? created : item)),
+        }))
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const updateGoal = useCallback(
-    (goal: SavingsGoal) => {
+    async (goal: SavingsGoal) => {
       const previous = ensurePlanState(queryClient)
       patchPlanState(queryClient, (state) => ({
         ...state,
         goals: state.goals.map((item) => (item.id === goal.id ? goal : item)),
       }))
 
-      void planApi.updateGoal(goal).catch((err) => rollbackOnError(previous, err))
+      try {
+        await planApi.updateGoal(goal)
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const removeGoal = useCallback(
-    (id: string) => {
+    async (id: string) => {
       const previous = ensurePlanState(queryClient)
       patchPlanState(queryClient, (state) => ({
         ...state,
         goals: state.goals.filter((item) => item.id !== id),
       }))
 
-      void planApi.deleteGoal(id).catch((err) => rollbackOnError(previous, err))
+      try {
+        await planApi.deleteGoal(id)
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const addInvestment = useCallback(
-    (entry: Omit<InvestmentEntry, 'id'>) => {
+    async (entry: Omit<InvestmentEntry, 'id'>) => {
       const previous = ensurePlanState(queryClient)
       const tempId = generateId()
       const optimistic = { ...entry, id: tempId }
@@ -327,42 +362,43 @@ export function usePlanProvider() {
         ),
       )
 
-      void planApi
-        .createInvestment(entry)
-        .then((created) => {
-          patchPlanState(queryClient, (state) => {
-            const withoutTemp = state.investments.filter((item) => item.id !== tempId)
-            const revertedGoals = syncGoalsForInvestmentChange(
-              { ...state, investments: withoutTemp },
-              optimistic,
-              undefined,
-            )
-            return syncGoalsForInvestmentChange(
-              { ...revertedGoals, investments: [...withoutTemp, created] },
-              undefined,
-              created,
-            )
-          })
-          if (created.goalId) {
-            const goal = previous.goals.find((item) => item.id === created.goalId)
-            if (goal) {
-              void planApi.updateGoal({
-                ...goal,
-                savedAmount: Math.max(
-                  0,
-                  Math.min(goal.targetAmount, goal.savedAmount + created.amount),
-                ),
-              })
-            }
-          }
+      try {
+        const created = await planApi.createInvestment(entry)
+        patchPlanState(queryClient, (state) => {
+          const withoutTemp = state.investments.filter((item) => item.id !== tempId)
+          const revertedGoals = syncGoalsForInvestmentChange(
+            { ...state, investments: withoutTemp },
+            optimistic,
+            undefined,
+          )
+          return syncGoalsForInvestmentChange(
+            { ...revertedGoals, investments: [...withoutTemp, created] },
+            undefined,
+            created,
+          )
         })
-        .catch((err) => rollbackOnError(previous, err))
+        if (created.goalId) {
+          const goal = previous.goals.find((item) => item.id === created.goalId)
+          if (goal) {
+            void planApi.updateGoal({
+              ...goal,
+              savedAmount: Math.max(
+                0,
+                Math.min(goal.targetAmount, goal.savedAmount + created.amount),
+              ),
+            })
+          }
+        }
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const updateInvestment = useCallback(
-    (entry: InvestmentEntry) => {
+    async (entry: InvestmentEntry) => {
       const previous = ensurePlanState(queryClient)
       const existing = previous.investments.find((item) => item.id === entry.id)
       patchPlanState(queryClient, (state) =>
@@ -376,39 +412,43 @@ export function usePlanProvider() {
         ),
       )
 
-      void planApi
-        .updateInvestment(entry)
-        .then(() => {
-          if (existing?.goalId && existing.goalId !== entry.goalId) {
-            const oldGoal = previous.goals.find((item) => item.id === existing.goalId)
-            if (oldGoal) {
-              void planApi.updateGoal({
-                ...oldGoal,
-                savedAmount: Math.max(0, oldGoal.savedAmount - existing.amount),
-              })
-            }
+      try {
+        await planApi.updateInvestment(entry)
+        if (existing?.goalId && existing.goalId !== entry.goalId) {
+          const oldGoal = previous.goals.find((item) => item.id === existing.goalId)
+          if (oldGoal) {
+            void planApi.updateGoal({
+              ...oldGoal,
+              savedAmount: Math.max(0, oldGoal.savedAmount - existing.amount),
+            })
           }
-          if (entry.goalId) {
-            const goal = previous.goals.find((item) => item.id === entry.goalId)
-            if (goal) {
-              const delta = entry.goalId === existing?.goalId ? entry.amount - (existing?.amount ?? 0) : entry.amount
-              void planApi.updateGoal({
-                ...goal,
-                savedAmount: Math.max(
-                  0,
-                  Math.min(goal.targetAmount, goal.savedAmount + delta),
-                ),
-              })
-            }
+        }
+        if (entry.goalId) {
+          const goal = previous.goals.find((item) => item.id === entry.goalId)
+          if (goal) {
+            const delta =
+              entry.goalId === existing?.goalId
+                ? entry.amount - (existing?.amount ?? 0)
+                : entry.amount
+            void planApi.updateGoal({
+              ...goal,
+              savedAmount: Math.max(
+                0,
+                Math.min(goal.targetAmount, goal.savedAmount + delta),
+              ),
+            })
           }
-        })
-        .catch((err) => rollbackOnError(previous, err))
+        }
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )
 
   const removeInvestment = useCallback(
-    (id: string) => {
+    async (id: string) => {
       const previous = ensurePlanState(queryClient)
       const existing = previous.investments.find((item) => item.id === id)
       patchPlanState(queryClient, (state) =>
@@ -419,20 +459,21 @@ export function usePlanProvider() {
         ),
       )
 
-      void planApi
-        .deleteInvestment(id)
-        .then(() => {
-          if (existing?.goalId) {
-            const goal = previous.goals.find((item) => item.id === existing.goalId)
-            if (goal) {
-              void planApi.updateGoal({
-                ...goal,
-                savedAmount: Math.max(0, goal.savedAmount - existing.amount),
-              })
-            }
+      try {
+        await planApi.deleteInvestment(id)
+        if (existing?.goalId) {
+          const goal = previous.goals.find((item) => item.id === existing.goalId)
+          if (goal) {
+            void planApi.updateGoal({
+              ...goal,
+              savedAmount: Math.max(0, goal.savedAmount - existing.amount),
+            })
           }
-        })
-        .catch((err) => rollbackOnError(previous, err))
+        }
+      } catch (err) {
+        rollbackOnError(previous, err)
+        throw err
+      }
     },
     [queryClient, rollbackOnError],
   )

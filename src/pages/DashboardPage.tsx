@@ -7,6 +7,7 @@ import {
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { DashboardStatCard } from '@/components/dashboard/DashboardStatCard'
 import { MonthObligationsSummary } from '@/components/dashboard/MonthObligationsSummary'
+import { MonthSetupPrompt } from '@/components/dashboard/MonthSetupPrompt'
 import { useDashboardSummary } from '@/hooks/useDashboardSummary'
 import { useSettings } from '@/hooks/usePlan'
 
@@ -28,6 +29,7 @@ export function DashboardPage() {
   const { summary, obligations, isLoading } = useDashboardSummary()
   const { settings } = useSettings()
   const reserveGoal = settings.monthlySavingsGoal + settings.monthlyInvestmentGoal
+  const needsSetup = summary.income === 0 && summary.obligations === 0
 
   if (isLoading) {
     return <DashboardSkeleton />
@@ -37,6 +39,8 @@ export function DashboardPage() {
     <div className="space-y-8">
       <DashboardHeader />
 
+      {needsSetup ? <MonthSetupPrompt /> : null}
+
       <section aria-label="Indicadores principales">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <DashboardStatCard
@@ -44,14 +48,14 @@ export function DashboardPage() {
             value={summary.income}
             icon={Wallet}
             variant="income"
-            description="Total planificado del mes"
+            description="Total del mes seleccionado"
           />
           <DashboardStatCard
             title="Obligaciones"
             value={summary.obligations}
             icon={ArrowDownCircle}
             variant="obligation"
-            description="Compromisos del mes"
+            description="Compromisos de cada mes"
           />
           <DashboardStatCard
             title="Ahorro / Inversión"
@@ -72,7 +76,7 @@ export function DashboardPage() {
         </div>
       </section>
 
-      <section aria-label="Obligaciones del mes">
+      <section aria-label="Obligaciones">
         <MonthObligationsSummary obligations={obligations} />
       </section>
     </div>

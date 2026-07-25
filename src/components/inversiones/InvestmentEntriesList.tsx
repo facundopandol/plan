@@ -1,14 +1,13 @@
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, TrendingUp } from 'lucide-react'
 import type { InvestmentEntry } from '@/types'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { formatCurrency } from '@/utils/format'
-import { getDestinationLabel, getDestinationStyle } from '@/utils/investment'
-import type { SavingsGoal } from '@/types'
+import { formatCurrency, formatDate } from '@/utils/format'
+import { getDestinationStyle } from '@/utils/investment'
 
 interface InvestmentEntriesListProps {
   entries: InvestmentEntry[]
-  goals: SavingsGoal[]
   onNew: () => void
   onEdit: (entry: InvestmentEntry) => void
   onDelete: (entry: InvestmentEntry) => void
@@ -16,7 +15,6 @@ interface InvestmentEntriesListProps {
 
 export function InvestmentEntriesList({
   entries,
-  goals,
   onNew,
   onEdit,
   onDelete,
@@ -25,28 +23,33 @@ export function InvestmentEntriesList({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold tracking-tight">Destinos registrados</h3>
+          <h3 className="text-sm font-semibold tracking-tight">Movimientos del mes</h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {entries.length} {entries.length === 1 ? 'destino' : 'destinos'} en el mes
+            {entries.length} {entries.length === 1 ? 'registro' : 'registros'}
           </p>
         </div>
         <Button size="sm" className="gap-1.5" onClick={onNew}>
           <Plus className="size-3.5" />
-          Agregar destino
+          Nuevo movimiento
         </Button>
       </div>
 
       {entries.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border/60 py-12 text-center">
-          <p className="text-sm font-medium">No hay destinos registrados</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Agregá cómo distribuís el capital reservado del mes.
-          </p>
-        </div>
+        <EmptyState
+          icon={TrendingUp}
+          compact
+          title="Todavía no reservaste capital este mes"
+          description="Registrá cuánto destinaste a ahorro o a inversión. Sin detalle del instrumento."
+          action={
+            <Button className="gap-2" onClick={onNew}>
+              <Plus className="size-4" />
+              Nuevo movimiento
+            </Button>
+          }
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {entries.map((entry) => {
-            const label = getDestinationLabel(entry, goals)
             const styles = getDestinationStyle(entry.type)
             return (
               <article
@@ -63,7 +66,9 @@ export function InvestmentEntriesList({
                     >
                       {entry.type}
                     </span>
-                    <p className="mt-1.5 truncate text-sm font-medium">{label}</p>
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      {formatDate(entry.date)}
+                    </p>
                     {entry.comment ? (
                       <p className="mt-0.5 truncate text-xs text-muted-foreground">{entry.comment}</p>
                     ) : null}

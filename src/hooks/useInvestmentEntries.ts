@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useGoals, useInvestmentActions, usePlan, useSelectedMonth } from '@/hooks/usePlan'
+import { useInvestmentActions, usePlan, useSelectedMonth } from '@/hooks/usePlan'
 import type { InvestmentEntry } from '@/types'
 import type { InvestmentSortDirection } from '@/schemas/inversionSchemas'
 import { getMonthFromDate } from '@/utils/date'
@@ -8,7 +8,6 @@ import { computeDestinationDistribution } from '@/utils/investment'
 export function useInvestmentEntries() {
   const { selectedMonth } = useSelectedMonth()
   const { isLoading } = usePlan()
-  const { goals } = useGoals()
   const { investments, addInvestment, updateInvestment, removeInvestment } =
     useInvestmentActions()
 
@@ -26,8 +25,8 @@ export function useInvestmentEntries() {
   )
 
   const distribution = useMemo(
-    () => computeDestinationDistribution(monthEntries, goals),
-    [monthEntries, goals],
+    () => computeDestinationDistribution(monthEntries),
+    [monthEntries],
   )
 
   const filteredEntries = useMemo(() => {
@@ -58,7 +57,6 @@ export function useInvestmentEntries() {
 
   return {
     isLoading,
-    goals,
     entries: filteredEntries,
     monthlyTotal,
     distribution,

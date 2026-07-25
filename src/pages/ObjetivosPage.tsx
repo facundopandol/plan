@@ -2,15 +2,18 @@ import { useState } from 'react'
 import { Plus, Target } from 'lucide-react'
 import type { SavingsGoal } from '@/types'
 import type { SavingsGoalFormValues } from '@/schemas/objetivoSchemas'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { PageListSkeleton } from '@/components/shared/PageListSkeleton'
 import { PageHeader } from '@/components/PageHeader'
 import { DeleteGoalDialog } from '@/components/objetivos/DeleteGoalDialog'
 import { GoalCard } from '@/components/objetivos/GoalCard'
 import { GoalFormModal } from '@/components/objetivos/GoalFormModal'
 import { Button } from '@/components/ui/button'
+import { getActionErrorMessage, useToast } from '@/context/ToastContext'
 import { useGoals, usePlan } from '@/hooks/usePlan'
 
 export function ObjetivosPage() {
+  const { toast } = useToast()
   const { isLoading } = usePlan()
   const { goals, addGoal, updateGoal, removeGoal } = useGoals()
 
@@ -34,19 +37,29 @@ export function ObjetivosPage() {
     setDeleteOpen(true)
   }
 
-  const handleFormSubmit = (values: SavingsGoalFormValues) => {
-    if (editing) {
-      updateGoal({ ...editing, ...values })
-    } else {
-      addGoal(values)
+  const handleFormSubmit = async (values: SavingsGoalFormValues) => {
+    try {
+      if (editing) {
+        await updateGoal({ ...editing, ...values })
+        toast.success('Objetivo actualizado')
+      } else {
+        await addGoal(values)
+        toast.success('Objetivo creado')
+      }
+    } catch (err) {
+      toast.error('No se pudo guardar el objetivo', getActionErrorMessage(err, 'Intentá de nuevo.'))
     }
   }
 
-  const handleDeleteConfirm = () => {
-    if (deleting) {
-      removeGoal(deleting.id)
+  const handleDeleteConfirm = async () => {
+    if (!deleting) return
+    try {
+      await removeGoal(deleting.id)
       setDeleteOpen(false)
       setDeleting(null)
+      toast.success('Objetivo eliminado')
+    } catch (err) {
+      toast.error('No se pudo eliminar el objetivo', getActionErrorMessage(err, 'Intentá de nuevo.'))
     }
   }
 
@@ -68,19 +81,17 @@ export function ObjetivosPage() {
       </div>
 
       {goals.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 py-20 text-center">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground">
-            <Target className="size-6" />
-          </div>
-          <p className="mt-4 text-sm font-medium">No tenés objetivos todavía</p>
-          <p className="mt-1 max-w-xs text-xs text-muted-foreground">
-            Creá tu primer objetivo para empezar a visualizar tu progreso de ahorro.
-          </p>
-          <Button className="mt-4 gap-2" onClick={openCreate}>
-            <Plus className="size-4" />
-            Crear objetivo
-          </Button>
-        </div>
+        <EmptyState
+          icon={Target}
+          title="No tenés objetivos todavía"
+          description="Creá tu primer objetivo para visualizar el progreso de ahorro a mediano y largo plazo."
+          action={
+            <Button className="gap-2" onClick={openCreate}>
+              <Plus className="size-4" />
+              Crear objetivo
+            </Button>
+          }
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {goals.map((goal) => (

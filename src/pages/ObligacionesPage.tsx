@@ -8,9 +8,11 @@ import { DeleteObligationDialog } from '@/components/obligaciones/DeleteObligati
 import { ObligationFormModal } from '@/components/obligaciones/ObligationFormModal'
 import { ObligationsTable } from '@/components/obligaciones/ObligationsTable'
 import { ObligationsToolbar } from '@/components/obligaciones/ObligationsToolbar'
+import { getActionErrorMessage, useToast } from '@/context/ToastContext'
 import { useFixedObligations } from '@/hooks/useFixedObligations'
 
 export function ObligacionesPage() {
+  const { toast } = useToast()
   const {
     isLoading,
     obligations,
@@ -49,7 +51,7 @@ export function ObligacionesPage() {
     setDeleteOpen(true)
   }
 
-  const handleFormSubmit = (values: FixedObligationFormValues) => {
+  const handleFormSubmit = async (values: FixedObligationFormValues) => {
     const payload = buildObligationPayload(values.type, values.description)
 
     const entry = {
@@ -59,18 +61,34 @@ export function ObligacionesPage() {
       amount: values.amount,
     }
 
-    if (editing) {
-      updateObligation({ ...editing, ...entry })
-    } else {
-      addObligation(entry)
+    try {
+      if (editing) {
+        await updateObligation({ ...editing, ...entry })
+        toast.success('Obligación actualizada')
+      } else {
+        await addObligation(entry)
+        toast.success('Obligación agregada')
+      }
+    } catch (err) {
+      toast.error(
+        'No se pudo guardar la obligación',
+        getActionErrorMessage(err, 'Intentá de nuevo.'),
+      )
     }
   }
 
-  const handleDeleteConfirm = () => {
-    if (deleting) {
-      removeObligation(deleting.id)
+  const handleDeleteConfirm = async () => {
+    if (!deleting) return
+    try {
+      await removeObligation(deleting.id)
       setDeleteOpen(false)
       setDeleting(null)
+      toast.success('Obligación eliminada')
+    } catch (err) {
+      toast.error(
+        'No se pudo eliminar la obligación',
+        getActionErrorMessage(err, 'Intentá de nuevo.'),
+      )
     }
   }
 
@@ -82,7 +100,7 @@ export function ObligacionesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Obligaciones"
-        description="Compromisos del mes: alquiler, servicios, tarjetas y más."
+        description="Compromisos que se repiten cada mes: alquiler, servicios, tarjetas y más."
       />
 
       <ObligationsToolbar
@@ -98,11 +116,17 @@ export function ObligacionesPage() {
 
       <ObligationsTable
         obligations={obligations}
+        totalCount={totalCount}
         sortField={sortField}
         sortDirection={sortDirection}
         onSort={toggleSort}
         onEdit={openEdit}
         onDelete={openDelete}
+        onCreate={openCreate}
+        onClearFilters={() => {
+          setSearch('')
+          setTypeFilter('all')
+        }}
       />
 
       <ObligationFormModal

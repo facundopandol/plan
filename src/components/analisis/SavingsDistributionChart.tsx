@@ -18,7 +18,7 @@ export function SavingsDistributionChart({ data }: SavingsDistributionChartProps
   if (data.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-        Sin destinos registrados en el mes actual
+        Sin ahorro ni inversión registrados en el mes actual
       </div>
     )
   }

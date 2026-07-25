@@ -1,6 +1,7 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Plus, SearchX, Trash2, Wallet } from 'lucide-react'
 import type { IncomeEntry } from '@/types'
 import type { IncomeSortDirection } from '@/schemas/ingresoSchemas'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -9,10 +10,13 @@ import { getIncomeEntryLabel } from '@/utils/incomeMappers'
 
 interface IncomesTableProps {
   entries: IncomeEntry[]
+  totalCount: number
   sortDirection: IncomeSortDirection
   onToggleSort: () => void
   onEdit: (entry: IncomeEntry) => void
   onDelete: (entry: IncomeEntry) => void
+  onCreate: () => void
+  onClearSearch: () => void
 }
 
 const typeVariant: Record<
@@ -28,19 +32,42 @@ const typeVariant: Record<
 
 export function IncomesTable({
   entries,
+  totalCount,
   sortDirection,
   onToggleSort,
   onEdit,
   onDelete,
+  onCreate,
+  onClearSearch,
 }: IncomesTableProps) {
   if (entries.length === 0) {
+    if (totalCount === 0) {
+      return (
+        <EmptyState
+          icon={Wallet}
+          title="Todavía no hay ingresos este mes"
+          description="Cargá tu sueldo u otros ingresos para ver el dinero disponible en el Dashboard."
+          action={
+            <Button className="gap-2" onClick={onCreate}>
+              <Plus className="size-4" />
+              Nuevo ingreso
+            </Button>
+          }
+        />
+      )
+    }
+
     return (
-      <div className="rounded-2xl border border-dashed border-border/60 py-16 text-center">
-        <p className="text-sm font-medium">No hay ingresos registrados</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Agregá un ingreso o ajustá el buscador.
-        </p>
-      </div>
+      <EmptyState
+        icon={SearchX}
+        title="Ningún ingreso coincide"
+        description="Probá otra búsqueda o limpiala para ver todos los ingresos del mes."
+        action={
+          <Button variant="outline" onClick={onClearSearch}>
+            Limpiar búsqueda
+          </Button>
+        }
+      />
     )
   }
 

@@ -64,7 +64,7 @@ export function AnalisisPage() {
 
         <ChartCard
           title="Distribución del ahorro"
-          description="Destinos del capital reservado en el mes actual"
+          description="Cuánto fue a ahorro y cuánto a inversión en el mes actual"
         >
           <SavingsDistributionChart data={savingsDistribution} />
         </ChartCard>

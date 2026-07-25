@@ -8,11 +8,13 @@ import { DeleteIncomeDialog } from '@/components/ingresos/DeleteIncomeDialog'
 import { IncomeFormModal } from '@/components/ingresos/IncomeFormModal'
 import { IncomesTable } from '@/components/ingresos/IncomesTable'
 import { IncomesToolbar } from '@/components/ingresos/IncomesToolbar'
+import { getActionErrorMessage, useToast } from '@/context/ToastContext'
 import { useMonthOptions, useSelectedMonth } from '@/hooks/usePlan'
 import { useIncomeEntries } from '@/hooks/useIncomeEntries'
 import { formatCurrency } from '@/utils/format'
 
 export function IngresosPage() {
+  const { toast } = useToast()
   const { selectedMonth } = useSelectedMonth()
   const months = useMonthOptions()
   const {
@@ -53,19 +55,29 @@ export function IngresosPage() {
     setDeleteOpen(true)
   }
 
-  const handleFormSubmit = (values: IncomeEntryFormValues) => {
-    if (editing) {
-      editEntry({ ...editing, ...values })
-    } else {
-      createEntry(values)
+  const handleFormSubmit = async (values: IncomeEntryFormValues) => {
+    try {
+      if (editing) {
+        await editEntry({ ...editing, ...values })
+        toast.success('Ingreso actualizado')
+      } else {
+        await createEntry(values)
+        toast.success('Ingreso agregado')
+      }
+    } catch (err) {
+      toast.error('No se pudo guardar el ingreso', getActionErrorMessage(err, 'Intentá de nuevo.'))
     }
   }
 
-  const handleDeleteConfirm = () => {
-    if (deleting) {
-      deleteEntry(deleting.id)
+  const handleDeleteConfirm = async () => {
+    if (!deleting) return
+    try {
+      await deleteEntry(deleting.id)
       setDeleteOpen(false)
       setDeleting(null)
+      toast.success('Ingreso eliminado')
+    } catch (err) {
+      toast.error('No se pudo eliminar el ingreso', getActionErrorMessage(err, 'Intentá de nuevo.'))
     }
   }
 
@@ -104,10 +116,13 @@ export function IngresosPage() {
 
       <IncomesTable
         entries={entries}
+        totalCount={totalCount}
         sortDirection={sortDirection}
         onToggleSort={toggleSort}
         onEdit={openEdit}
         onDelete={openDelete}
+        onCreate={openCreate}
+        onClearSearch={() => setSearch('')}
       />
 
       <IncomeFormModal
