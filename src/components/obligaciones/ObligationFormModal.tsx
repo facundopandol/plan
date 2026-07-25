@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/select'
 import {
   fixedObligationFormSchema,
-  OBLIGATION_FREQUENCIES,
   type FixedObligationFormValues,
 } from '@/schemas/obligacionSchemas'
 import { useObligationTypes } from '@/hooks/useObligationTypes'
@@ -56,14 +55,10 @@ export function ObligationFormModal({
       type: 'Alquiler',
       description: '',
       amount: 0,
-      frequency: 'Mensual',
-      active: true,
     },
   })
 
   const type = watch('type')
-  const frequency = watch('frequency')
-  const active = watch('active')
 
   useEffect(() => {
     if (open) {
@@ -72,15 +67,11 @@ export function ObligationFormModal({
           ? {
               ...parseObligationToForm(obligation),
               amount: obligation.amount,
-              frequency: obligation.frequency === 'Anual' ? 'Anual' : 'Mensual',
-              active: obligation.active,
             }
           : {
               type: 'Alquiler',
               description: '',
               amount: 0,
-              frequency: 'Mensual',
-              active: true,
             },
       )
     }
@@ -105,8 +96,8 @@ export function ObligationFormModal({
           <DialogTitle>{isEditing ? 'Editar obligación' : 'Nueva obligación'}</DialogTitle>
           <DialogDescription>
             {isEditing
-              ? 'Modificá el monto y la frecuencia de este compromiso.'
-              : 'Definí cuánto reservar por tipo. Solo montos, sin fechas de pago.'}
+              ? 'Modificá el tipo, detalle o monto de este compromiso mensual.'
+              : 'Definí un compromiso del mes. Tipo, detalle opcional y monto.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -140,60 +131,18 @@ export function ObligationFormModal({
             )}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Frecuencia</Label>
-              <Select
-                value={frequency}
-                onValueChange={(v) =>
-                  setValue('frequency', v as FixedObligationFormValues['frequency'])
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  {OBLIGATION_FREQUENCIES.map((freq) => (
-                    <SelectItem key={freq} value={freq}>
-                      {freq}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.frequency && (
-                <p className="text-xs text-destructive">{errors.frequency.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="obligation-amount">Monto</Label>
-              <Input
-                id="obligation-amount"
-                type="number"
-                min={0}
-                step={1000}
-                {...register('amount', { valueAsNumber: true })}
-              />
-              {errors.amount && (
-                <p className="text-xs text-destructive">{errors.amount.message}</p>
-              )}
-            </div>
-          </div>
-
           <div className="space-y-2">
-            <Label>Activa</Label>
-            <Select
-              value={active ? 'yes' : 'no'}
-              onValueChange={(v) => setValue('active', v === 'yes')}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="yes">Sí</SelectItem>
-                <SelectItem value="no">No</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="obligation-amount">Monto</Label>
+            <Input
+              id="obligation-amount"
+              type="number"
+              min={0}
+              step={1000}
+              {...register('amount', { valueAsNumber: true })}
+            />
+            {errors.amount && (
+              <p className="text-xs text-destructive">{errors.amount.message}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

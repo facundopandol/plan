@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, Moon, Palette, User, Wallet } from 'lucide-react'
+import { Check, Moon, Palette, Target, User, Wallet } from 'lucide-react'
 import { PageListSkeleton } from '@/components/shared/PageListSkeleton'
 import { PageHeader } from '@/components/PageHeader'
 import { ColorPicker } from '@/components/configuracion/ColorPicker'
@@ -22,6 +22,7 @@ import {
   type SettingsFormValues,
 } from '@/schemas/configuracionSchemas'
 import type { CurrencyCode, PrimaryColor } from '@/types'
+import { localeForCurrency } from '@/utils/format'
 import { CURRENCY_OPTIONS } from '@/utils/theme'
 
 export function ConfiguracionPage() {
@@ -41,6 +42,8 @@ export function ConfiguracionPage() {
     values: {
       name: settings.name,
       currency: settings.currency,
+      monthlySavingsGoal: settings.monthlySavingsGoal,
+      monthlyInvestmentGoal: settings.monthlyInvestmentGoal,
       primaryColor: settings.primaryColor,
       darkMode: settings.darkMode,
     },
@@ -58,9 +61,11 @@ export function ConfiguracionPage() {
         ...settings,
         name: data.name.trim(),
         currency: data.currency,
+        monthlySavingsGoal: data.monthlySavingsGoal,
+        monthlyInvestmentGoal: data.monthlyInvestmentGoal,
         primaryColor: data.primaryColor,
         darkMode: data.darkMode,
-        locale: settings.locale,
+        locale: localeForCurrency(data.currency),
       })
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'No se pudieron guardar los cambios.')
@@ -121,6 +126,54 @@ export function ConfiguracionPage() {
               </SelectContent>
             </Select>
           </SettingRow>
+        </SettingCard>
+
+        <SettingCard
+          title="Metas mensuales"
+          description="Objetivos de reserva usados en el Dashboard"
+          icon={Target}
+        >
+          <SettingRow
+            label="Ahorro mensual"
+            hint="Cuánto querés guardar cada mes"
+            htmlFor="monthlySavingsGoal"
+          >
+            <Input
+              id="monthlySavingsGoal"
+              type="number"
+              min={0}
+              step={1000}
+              inputMode="numeric"
+              className="bg-background text-right tabular-nums"
+              {...register('monthlySavingsGoal', { valueAsNumber: true })}
+            />
+          </SettingRow>
+          {errors.monthlySavingsGoal && (
+            <p className="px-5 pb-3 text-xs text-destructive">
+              {errors.monthlySavingsGoal.message}
+            </p>
+          )}
+
+          <SettingRow
+            label="Inversión mensual"
+            hint="Cuánto querés invertir cada mes"
+            htmlFor="monthlyInvestmentGoal"
+          >
+            <Input
+              id="monthlyInvestmentGoal"
+              type="number"
+              min={0}
+              step={1000}
+              inputMode="numeric"
+              className="bg-background text-right tabular-nums"
+              {...register('monthlyInvestmentGoal', { valueAsNumber: true })}
+            />
+          </SettingRow>
+          {errors.monthlyInvestmentGoal && (
+            <p className="px-5 pb-3 text-xs text-destructive">
+              {errors.monthlyInvestmentGoal.message}
+            </p>
+          )}
         </SettingCard>
 
         <SettingCard

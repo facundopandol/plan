@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { FixedObligation, ObligationFrequency } from '@/types'
+import type { FixedObligation } from '@/types'
 import type { ObligationSortField, SortDirection } from '@/schemas/obligacionSchemas'
 import { OBLIGATION_TYPES } from '@/schemas/obligacionSchemas'
 import { useFixedObligationsData, usePlan } from '@/hooks/usePlan'
@@ -18,10 +18,6 @@ function compareValues(
       return a.name.localeCompare(b.name, 'es') * factor
     case 'amount':
       return (a.amount - b.amount) * factor
-    case 'frequency':
-      return a.frequency.localeCompare(b.frequency, 'es') * factor
-    case 'active':
-      return (Number(a.active) - Number(b.active)) * factor
     default:
       return 0
   }
@@ -34,7 +30,6 @@ export function useFixedObligations() {
 
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string>('all')
-  const [frequencyFilter, setFrequencyFilter] = useState<ObligationFrequency | 'all'>('all')
   const [sortField, setSortField] = useState<ObligationSortField>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
@@ -47,11 +42,10 @@ export function useFixedObligations() {
       .filter((item) => {
         const matchesSearch = obligationMatchesSearch(item, query)
         const matchesType = typeFilter === 'all' || item.category === typeFilter
-        const matchesFrequency = frequencyFilter === 'all' || item.frequency === frequencyFilter
-        return matchesSearch && matchesType && matchesFrequency
+        return matchesSearch && matchesType
       })
       .sort((a, b) => compareValues(a, b, sortField, sortDirection))
-  }, [obligations, search, typeFilter, frequencyFilter, sortField, sortDirection])
+  }, [obligations, search, typeFilter, sortField, sortDirection])
 
   const toggleSort = (field: ObligationSortField) => {
     if (sortField === field) {
@@ -72,8 +66,6 @@ export function useFixedObligations() {
     setSearch,
     typeFilter,
     setTypeFilter,
-    frequencyFilter,
-    setFrequencyFilter,
     sortField,
     sortDirection,
     toggleSort,

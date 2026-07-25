@@ -4,8 +4,7 @@ import type { MonthlySummary, Obligation } from '@/types'
 import { getMonthFromDate } from '@/utils/date'
 import {
   fixedObligationToMonthView,
-  getActiveMonthlyFixedObligations,
-  sumActiveMonthlyFixedObligations,
+  sumFixedObligations,
 } from '@/utils/obligationMappers'
 
 export { usePlan } from '@/context/PlanContext'
@@ -67,19 +66,15 @@ export function useDashboardSummary() {
     investments,
   } = plan
 
-  // Misma fuente que la página Obligaciones: fijas mensuales activas.
-  // No mezclar con filas legacy is_fixed=false del mes (duplicaban alquiler, etc.).
+  // Misma fuente que la página Obligaciones: compromisos fijos del mes.
   const obligations = useMemo<Obligation[]>(
-    () =>
-      getActiveMonthlyFixedObligations(fixedObligations).map((item) =>
-        fixedObligationToMonthView(item),
-      ),
+    () => fixedObligations.map((item) => fixedObligationToMonthView(item)),
     [fixedObligations],
   )
 
   const summary = useMemo<MonthlySummary>(() => {
     const income = getIncomeMonthlyTotal(selectedMonth)
-    const obligationsTotal = sumActiveMonthlyFixedObligations(fixedObligations)
+    const obligationsTotal = sumFixedObligations(fixedObligations)
     // Misma fuente que Ahorro e Inversiones: suma de lo cargado en el mes.
     const investmentGoal = investments
       .filter((entry) => getMonthFromDate(entry.date) === selectedMonth)

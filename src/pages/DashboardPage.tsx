@@ -8,6 +8,7 @@ import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { DashboardStatCard } from '@/components/dashboard/DashboardStatCard'
 import { MonthObligationsSummary } from '@/components/dashboard/MonthObligationsSummary'
 import { useDashboardSummary } from '@/hooks/useDashboardSummary'
+import { useSettings } from '@/hooks/usePlan'
 
 function DashboardSkeleton() {
   return (
@@ -25,6 +26,8 @@ function DashboardSkeleton() {
 
 export function DashboardPage() {
   const { summary, obligations, isLoading } = useDashboardSummary()
+  const { settings } = useSettings()
+  const reserveGoal = settings.monthlySavingsGoal + settings.monthlyInvestmentGoal
 
   if (isLoading) {
     return <DashboardSkeleton />
@@ -56,6 +59,7 @@ export function DashboardPage() {
             icon={TrendingUp}
             variant="investment"
             description="Capital destinado este mes"
+            goal={reserveGoal}
           />
           <DashboardStatCard
             title="Dinero libre"

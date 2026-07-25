@@ -1,11 +1,3 @@
-export interface Income {
-  id: string
-  name: string
-  amount: number
-  category: string
-  recurring: boolean
-}
-
 export type IncomeType = 'Sueldo' | 'Horas extras' | 'Aguinaldo' | 'Bono' | 'Otro'
 
 export interface IncomeEntry {
@@ -24,8 +16,6 @@ export interface Obligation {
   description?: string
 }
 
-export type ObligationFrequency = 'Mensual' | 'Anual'
-
 export type ObligationCategory = string
 
 export interface ObligationTypeOption {
@@ -39,16 +29,6 @@ export interface FixedObligation {
   category: ObligationCategory
   description?: string
   amount: number
-  frequency: ObligationFrequency
-  active: boolean
-}
-
-export interface Investment {
-  id: string
-  name: string
-  amount: number
-  type: string
-  returnRate?: number
 }
 
 export type DestinationType =
@@ -72,14 +52,6 @@ export interface InvestmentEntry {
   comment?: string
   goalId?: string
   personalName?: string
-}
-
-export interface Goal {
-  id: string
-  name: string
-  targetAmount: number
-  currentAmount: number
-  deadline: string
 }
 
 export type GoalColor = 'emerald' | 'blue' | 'violet' | 'amber' | 'rose' | 'teal'
@@ -114,12 +86,6 @@ export interface GoalColorStyle {
   ring: string
 }
 
-export interface MonthPlanState {
-  incomes: Income[]
-  obligations: Obligation[]
-  investmentGoal: number
-}
-
 export interface MonthlySummary {
   income: number
   obligations: number
@@ -131,21 +97,6 @@ export interface MonthlySummary {
 export interface MonthOption {
   value: string
   label: string
-}
-
-export interface MonthDetail {
-  summary: MonthlySummary
-  incomes: Income[]
-  obligations: Obligation[]
-  investments: Investment[]
-  goals: Goal[]
-}
-
-export interface AnalysisMetric {
-  label: string
-  value: string
-  change?: string
-  trend?: 'up' | 'down' | 'neutral'
 }
 
 export type PrimaryColor = 'zinc' | 'emerald' | 'blue' | 'violet' | 'rose' | 'amber'

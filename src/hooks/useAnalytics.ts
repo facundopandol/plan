@@ -8,12 +8,10 @@ function toPlanState(plan: ReturnType<typeof usePlan>): PlanState {
     userId: '',
     settings: plan.settings,
     monthOptions: plan.monthOptions,
-    monthIdMap: {},
     incomes: plan.incomes,
     fixedObligations: plan.fixedObligations,
     goals: plan.goals,
     investments: plan.investments,
-    monthPlans: plan.monthPlans,
   }
 }
 
@@ -22,17 +20,8 @@ export function useAnalytics() {
 
   const data = useMemo(() => {
     if (plan.isLoading) return undefined
-    return buildAnalyticsFromPlan(toPlanState(plan))
-  }, [
-    plan.isLoading,
-    plan.monthOptions,
-    plan.incomes,
-    plan.investments,
-    plan.monthPlans,
-    plan.fixedObligations,
-    plan.goals,
-    plan.settings,
-  ])
+    return buildAnalyticsFromPlan(toPlanState(plan), plan.selectedMonth)
+  }, [plan])
 
   return {
     data,

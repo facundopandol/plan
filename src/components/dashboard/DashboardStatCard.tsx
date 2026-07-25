@@ -9,6 +9,7 @@ interface DashboardStatCardProps {
   description?: string
   variant?: 'default' | 'income' | 'obligation' | 'available' | 'investment' | 'free'
   featured?: boolean
+  goal?: number
 }
 
 const variants = {
@@ -51,8 +52,11 @@ export function DashboardStatCard({
   description,
   variant = 'default',
   featured = false,
+  goal,
 }: DashboardStatCardProps) {
   const style = variants[variant]
+  const hasGoal = goal !== undefined && goal > 0
+  const progress = hasGoal ? Math.min(Math.round((value / goal) * 100), 100) : 0
 
   return (
     <div
@@ -76,10 +80,24 @@ export function DashboardStatCard({
           >
             {formatCurrency(value)}
           </p>
-          {description && (
-            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-              {description}
-            </p>
+          {hasGoal ? (
+            <div className="mt-2.5">
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                <div
+                  className={cn('h-full rounded-full transition-all duration-500', style.icon)}
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                {progress}% de {formatCurrency(goal)}
+              </p>
+            </div>
+          ) : (
+            description && (
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                {description}
+              </p>
+            )
           )}
         </div>
         <div

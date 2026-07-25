@@ -3,16 +3,12 @@ import type {
   FixedObligation,
   GoalColor,
   GoalIcon,
-  Income,
   IncomeEntry,
   IncomeType,
   InvestmentEntry,
   InvestmentType,
   MonthOption,
-  MonthPlanState,
-  Obligation,
   ObligationCategory,
-  ObligationFrequency,
   PrimaryColor,
   SavingsGoal,
   UserSettings,
@@ -66,16 +62,6 @@ export function mapIncomeToEntry(income: ApiIncome): IncomeEntry {
   }
 }
 
-export function mapIncomeToPlanItem(income: ApiIncome): Income {
-  return {
-    id: income.id,
-    name: income.name,
-    amount: toNumber(income.amount),
-    category: income.description ?? 'General',
-    recurring: income.recurring,
-  }
-}
-
 export function mapObligationToFixed(obligation: ApiObligation): FixedObligation {
   const category = obligation.category_name ?? 'Otro'
   const description = obligation.description ?? undefined
@@ -85,18 +71,6 @@ export function mapObligationToFixed(obligation: ApiObligation): FixedObligation
     category: category as ObligationCategory,
     description,
     amount: toNumber(obligation.amount),
-    frequency: (obligation.frequency ?? 'Mensual') as ObligationFrequency,
-    active: obligation.active,
-  }
-}
-
-export function mapObligationToMonth(obligation: ApiObligation): Obligation {
-  return {
-    id: obligation.id,
-    name: obligation.name,
-    amount: toNumber(obligation.amount),
-    category: obligation.category_name ?? 'Otro',
-    description: obligation.description ?? undefined,
   }
 }
 
@@ -136,43 +110,17 @@ export function incomeEntryToApi(entry: Omit<IncomeEntry, 'id'>) {
   }
 }
 
-export function planIncomeToApi(income: Omit<Income, 'id'>, monthId: string) {
-  return {
-    name: income.name,
-    description: income.category,
-    income_type: 'Otro',
-    amount: income.amount,
-    month_id: monthId,
-    is_plan_item: true,
-    recurring: income.recurring,
-  }
-}
-
 export function fixedObligationToApi(entry: Omit<FixedObligation, 'id'>) {
   return {
     name: entry.name,
     amount: entry.amount,
     category_name: entry.category,
     description: entry.description ?? null,
-    frequency: entry.frequency,
+    frequency: 'Mensual',
     due_day: null,
-    active: entry.active,
+    active: true,
     is_fixed: true,
     paid: false,
-  }
-}
-
-export function monthObligationToApi(obligation: Omit<Obligation, 'id'>, monthId: string) {
-  return {
-    name: obligation.name,
-    amount: obligation.amount,
-    due_date: null,
-    category_name: obligation.category,
-    description: obligation.description ?? null,
-    paid: false,
-    is_fixed: false,
-    month_id: monthId,
-    active: true,
   }
 }
 
@@ -198,24 +146,3 @@ export function savingsGoalToApi(goal: Omit<SavingsGoal, 'id'>) {
   }
 }
 
-export function buildMonthPlans(
-  months: ApiMonth[],
-  incomes: ApiIncome[],
-  obligations: ApiObligation[],
-): Record<string, MonthPlanState> {
-  const monthPlans: Record<string, MonthPlanState> = {}
-
-  for (const month of months) {
-    monthPlans[month.year_month] = {
-      incomes: incomes
-        .filter((item) => item.is_plan_item && item.month_id === month.id)
-        .map(mapIncomeToPlanItem),
-      obligations: obligations
-        .filter((item) => !item.is_fixed && item.month_id === month.id)
-        .map(mapObligationToMonth),
-      investmentGoal: toNumber(month.investment_goal),
-    }
-  }
-
-  return monthPlans
-}

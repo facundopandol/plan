@@ -1,31 +1,23 @@
 import type {
   FixedObligation,
-  Income,
   IncomeEntry,
   InvestmentEntry,
   MonthOption,
-  MonthPlanState,
-  Obligation,
   SavingsGoal,
   UserSettings,
 } from '@/types'
 import { ApiError, apiClient } from '@/lib/api/client'
 import {
-  buildMonthPlans,
   fixedObligationToApi,
   incomeEntryToApi,
   investmentEntryToApi,
   mapGoal,
   mapIncomeToEntry,
-  mapIncomeToPlanItem,
   mapInvestment,
   mapMonthToOption,
   mapObligationToFixed,
-  mapObligationToMonth,
   mapSettingsToUserUpdate,
   mapUserToSettings,
-  monthObligationToApi,
-  planIncomeToApi,
   savingsGoalToApi,
 } from '@/services/api/mappers'
 import type {
@@ -37,27 +29,20 @@ import type {
   ApiUser,
   PaginatedResponse,
 } from '@/services/api/types'
-import { formatMonthLabel, getDefaultMonthOptions } from '@/utils/month'
+import { getDefaultMonthOptions } from '@/utils/month'
 
 export interface PlanState {
   userId: string
   settings: UserSettings
   monthOptions: MonthOption[]
-  monthIdMap: Record<string, string>
   incomes: IncomeEntry[]
   fixedObligations: FixedObligation[]
   goals: SavingsGoal[]
   investments: InvestmentEntry[]
-  monthPlans: Record<string, MonthPlanState>
 }
 
 export function createEmptyPlanState(): PlanState {
   const monthOptions = getDefaultMonthOptions()
-  const monthPlans: Record<string, MonthPlanState> = {}
-
-  for (const option of monthOptions) {
-    monthPlans[option.value] = { incomes: [], obligations: [], investmentGoal: 0 }
-  }
 
   return {
     userId: '',
@@ -71,12 +56,10 @@ export function createEmptyPlanState(): PlanState {
       darkMode: false,
     },
     monthOptions,
-    monthIdMap: {},
     incomes: [],
     fixedObligations: [],
     goals: [],
     investments: [],
-    monthPlans,
   }
 }
 
@@ -111,25 +94,14 @@ export const planApi = {
             .map(mapMonthToOption)
         : getDefaultMonthOptions()
 
-    const monthIdMap = Object.fromEntries(months.map((month) => [month.year_month, month.id]))
-    const monthPlans = buildMonthPlans(months, incomes, obligations)
-
-    for (const option of monthOptions) {
-      if (!monthPlans[option.value]) {
-        monthPlans[option.value] = { incomes: [], obligations: [], investmentGoal: 0 }
-      }
-    }
-
     return {
       userId: user.id,
       settings: mapUserToSettings(user),
       monthOptions,
-      monthIdMap,
       incomes: incomes.filter((item) => !item.is_plan_item).map(mapIncomeToEntry),
       fixedObligations: obligations.filter((item) => item.is_fixed).map(mapObligationToFixed),
       goals: goals.map(mapGoal),
       investments: investments.map(mapInvestment),
-      monthPlans,
     }
   },
 
@@ -153,26 +125,6 @@ export const planApi = {
       })
     }
     return id
-  },
-
-  async ensureMonth(yearMonth: string, monthIdMap: Record<string, string>): Promise<string> {
-    if (monthIdMap[yearMonth]) return monthIdMap[yearMonth]
-
-    try {
-      const { data } = await apiClient.post<ApiMonth>('/months', {
-        year_month: yearMonth,
-        label: formatMonthLabel(yearMonth),
-        investment_goal: 0,
-      })
-      return data.id
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 409) {
-        const months = await fetchAll<ApiMonth>('/months')
-        const existing = months.find((month) => month.year_month === yearMonth)
-        if (existing) return existing.id
-      }
-      throw error
-    }
   },
 
   async createIncome(entry: Omit<IncomeEntry, 'id'>): Promise<IncomeEntry> {
@@ -236,53 +188,6 @@ export const planApi = {
     await apiClient.delete(`/investments/${id}`)
   },
 
-  async updateMonthInvestmentGoal(
-    yearMonth: string,
-    monthId: string,
-    amount: number,
-    label: string,
-  ): Promise<void> {
-    await apiClient.put(`/months/${monthId}`, {
-      year_month: yearMonth,
-      label,
-      investment_goal: amount,
-    })
-  },
-
-  async createMonthIncome(monthId: string, income: Omit<Income, 'id'>): Promise<Income> {
-    const { data } = await apiClient.post<ApiIncome>('/incomes', planIncomeToApi(income, monthId))
-    return mapIncomeToPlanItem(data)
-  },
-
-  async updateMonthIncome(income: Income, monthId: string): Promise<Income> {
-    const { data } = await apiClient.put<ApiIncome>(`/incomes/${income.id}`, {
-      ...planIncomeToApi(income, monthId),
-    })
-    return mapIncomeToPlanItem(data)
-  },
-
-  async deleteMonthIncome(id: string): Promise<void> {
-    await apiClient.delete(`/incomes/${id}`)
-  },
-
-  async createMonthObligation(monthId: string, obligation: Omit<Obligation, 'id'>): Promise<Obligation> {
-    const { data } = await apiClient.post<ApiObligation>(
-      '/obligations',
-      monthObligationToApi(obligation, monthId),
-    )
-    return mapObligationToMonth(data)
-  },
-
-  async updateMonthObligation(obligation: Obligation, monthId: string): Promise<Obligation> {
-    const { data } = await apiClient.put<ApiObligation>(`/obligations/${obligation.id}`, {
-      ...monthObligationToApi(obligation, monthId),
-    })
-    return mapObligationToMonth(data)
-  },
-
-  async deleteMonthObligation(id: string): Promise<void> {
-    await apiClient.delete(`/obligations/${id}`)
-  },
 }
 
 export type { PlanState as PlanInitialState }

@@ -79,14 +79,17 @@ export function AnalisisPage() {
           <EvolutionLineChart data={evolution} dataKey="income" color={CHART_COLORS.income} />
         </ChartCard>
 
-        <ChartCard title="Evolución de obligaciones" description="Compromisos mensuales">
+        <ChartCard
+          title="Evolución de obligaciones"
+          description="Compromisos del mes (misma base que el Dashboard)"
+        >
           <EvolutionLineChart data={evolution} dataKey="obligations" color={CHART_COLORS.obligations} />
         </ChartCard>
       </div>
 
       <ChartCard
         title="Top categorías"
-        description="Obligaciones por categoría en el mes actual"
+        description="Obligaciones por categoría"
         className="max-w-2xl"
       >
         <TopCategoriesChart data={topCategories} />

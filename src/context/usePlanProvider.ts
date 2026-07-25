@@ -2,20 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import type {
   FixedObligation,
-  Income,
   IncomeEntry,
   InvestmentEntry,
-  MonthPlanState,
-  Obligation,
   SavingsGoal,
   UserSettings,
 } from '@/types'
 import { planKeys } from '@/lib/api/queryKeys'
 import { ApiError } from '@/lib/api/client'
 import { createEmptyPlanState, planApi, type PlanState } from '@/services/planApi'
-import { generateId } from '@/utils/calculateSummary'
 import { getMonthFromDate } from '@/utils/date'
-import { formatMonthLabel, getDefaultMonthOptions } from '@/utils/month'
+import { getDefaultMonthOptions } from '@/utils/month'
+import { applyFormatSettings } from '@/utils/format'
+import { generateId } from '@/utils/id'
 import { applyTheme } from '@/utils/theme'
 
 function patchPlanState(
@@ -32,12 +30,6 @@ function ensurePlanState(queryClient: ReturnType<typeof useQueryClient>): PlanSt
   const empty = createEmptyPlanState()
   queryClient.setQueryData(planKeys.state(), empty)
   return empty
-}
-
-const EMPTY_MONTH_PLAN: MonthPlanState = {
-  incomes: [],
-  obligations: [],
-  investmentGoal: 0,
 }
 
 function applyGoalDelta(state: PlanState, goalId: string, delta: number): PlanState {
@@ -90,6 +82,12 @@ export function usePlanProvider() {
     staleTime: 30_000,
   })
 
+  // Aplicar moneda/locale en el mismo render en que llegan los settings,
+  // para que formatCurrency no pinte un frame en ARS por defecto.
+  if (data?.settings?.currency) {
+    applyFormatSettings(data.settings)
+  }
+
   useEffect(() => {
     if (data && !selectedMonth) {
       setSelectedMonth(data.monthOptions[0]?.value ?? getDefaultMonthOptions()[0]?.value ?? '')
@@ -100,7 +98,13 @@ export function usePlanProvider() {
     if (data?.settings) {
       applyTheme(data.settings)
     }
-  }, [data?.settings?.primaryColor, data?.settings?.darkMode, data?.settings])
+  }, [
+    data?.settings,
+    data?.settings?.primaryColor,
+    data?.settings?.darkMode,
+    data?.settings?.currency,
+    data?.settings?.locale,
+  ])
 
   const rollbackOnError = useCallback(
     (previous: PlanState | undefined, error?: unknown) => {
@@ -433,182 +437,6 @@ export function usePlanProvider() {
     [queryClient, rollbackOnError],
   )
 
-  const getMonthPlan = useCallback(
-    (month: string) => data?.monthPlans[month],
-    [data?.monthPlans],
-  )
-
-  const resolveMonthId = useCallback(
-    async (month: string): Promise<string> => {
-      const state = queryClient.getQueryData<PlanState>(planKeys.state()) ?? createEmptyPlanState()
-      if (state.monthIdMap[month]) return state.monthIdMap[month]
-
-      const monthId = await planApi.ensureMonth(month, state.monthIdMap)
-      patchPlanState(queryClient, (current) => ({
-        ...current,
-        monthIdMap: { ...current.monthIdMap, [month]: monthId },
-        monthOptions: current.monthOptions.some((option) => option.value === month)
-          ? current.monthOptions
-          : [{ value: month, label: formatMonthLabel(month) }, ...current.monthOptions],
-        monthPlans: current.monthPlans[month]
-          ? current.monthPlans
-          : { ...current.monthPlans, [month]: EMPTY_MONTH_PLAN },
-      }))
-      return monthId
-    },
-    [queryClient],
-  )
-
-  const updateMonthPlan = useCallback(
-    (month: string, updater: (plan: MonthPlanState) => MonthPlanState) => {
-      patchPlanState(queryClient, (state) => {
-        const current = state.monthPlans[month] ?? EMPTY_MONTH_PLAN
-        return {
-          ...state,
-          monthPlans: { ...state.monthPlans, [month]: updater(current) },
-        }
-      })
-    },
-    [queryClient],
-  )
-
-  const setMonthInvestmentGoal = useCallback(
-    (month: string, amount: number) => {
-      const previous = ensurePlanState(queryClient)
-      updateMonthPlan(month, (plan) => ({ ...plan, investmentGoal: amount }))
-
-      void (async () => {
-        try {
-          const monthId = await resolveMonthId(month)
-          await planApi.updateMonthInvestmentGoal(
-            month,
-            monthId,
-            amount,
-            formatMonthLabel(month),
-          )
-        } catch (err) {
-          rollbackOnError(previous, err)
-        }
-      })()
-    },
-    [resolveMonthId, rollbackOnError, updateMonthPlan],
-  )
-
-  const addMonthIncome = useCallback(
-    (month: string, income: Income) => {
-      const previous = ensurePlanState(queryClient)
-      const tempId = generateId()
-      updateMonthPlan(month, (plan) => ({ ...plan, incomes: [...plan.incomes, { ...income, id: tempId }] }))
-
-      void (async () => {
-        try {
-          const monthId = await resolveMonthId(month)
-          const created = await planApi.createMonthIncome(monthId, income)
-          updateMonthPlan(month, (plan) => ({
-            ...plan,
-            incomes: plan.incomes.map((item) => (item.id === tempId ? created : item)),
-          }))
-        } catch (err) {
-          rollbackOnError(previous, err)
-        }
-      })()
-    },
-    [resolveMonthId, rollbackOnError, updateMonthPlan],
-  )
-
-  const updateMonthIncome = useCallback(
-    (month: string, income: Income) => {
-      const previous = ensurePlanState(queryClient)
-      updateMonthPlan(month, (plan) => ({
-        ...plan,
-        incomes: plan.incomes.map((item) => (item.id === income.id ? income : item)),
-      }))
-
-      void (async () => {
-        try {
-          const monthId = await resolveMonthId(month)
-          await planApi.updateMonthIncome(income, monthId)
-        } catch (err) {
-          rollbackOnError(previous, err)
-        }
-      })()
-    },
-    [resolveMonthId, rollbackOnError, updateMonthPlan],
-  )
-
-  const removeMonthIncome = useCallback(
-    (month: string, id: string) => {
-      const previous = ensurePlanState(queryClient)
-      updateMonthPlan(month, (plan) => ({
-        ...plan,
-        incomes: plan.incomes.filter((item) => item.id !== id),
-      }))
-
-      void planApi.deleteMonthIncome(id).catch((err) => rollbackOnError(previous, err))
-    },
-    [rollbackOnError, updateMonthPlan],
-  )
-
-  const addMonthObligation = useCallback(
-    (month: string, obligation: Obligation) => {
-      const previous = ensurePlanState(queryClient)
-      const tempId = generateId()
-      updateMonthPlan(month, (plan) => ({
-        ...plan,
-        obligations: [...plan.obligations, { ...obligation, id: tempId }],
-      }))
-
-      void (async () => {
-        try {
-          const monthId = await resolveMonthId(month)
-          const created = await planApi.createMonthObligation(monthId, obligation)
-          updateMonthPlan(month, (plan) => ({
-            ...plan,
-            obligations: plan.obligations.map((item) => (item.id === tempId ? created : item)),
-          }))
-        } catch (err) {
-          rollbackOnError(previous, err)
-        }
-      })()
-    },
-    [resolveMonthId, rollbackOnError, updateMonthPlan],
-  )
-
-  const updateMonthObligation = useCallback(
-    (month: string, obligation: Obligation) => {
-      const previous = ensurePlanState(queryClient)
-      updateMonthPlan(month, (plan) => ({
-        ...plan,
-        obligations: plan.obligations.map((item) =>
-          item.id === obligation.id ? obligation : item,
-        ),
-      }))
-
-      void (async () => {
-        try {
-          const monthId = await resolveMonthId(month)
-          await planApi.updateMonthObligation(obligation, monthId)
-        } catch (err) {
-          rollbackOnError(previous, err)
-        }
-      })()
-    },
-    [resolveMonthId, rollbackOnError, updateMonthPlan],
-  )
-
-  const removeMonthObligation = useCallback(
-    (month: string, id: string) => {
-      const previous = ensurePlanState(queryClient)
-      updateMonthPlan(month, (plan) => ({
-        ...plan,
-        obligations: plan.obligations.filter((item) => item.id !== id),
-      }))
-
-      void planApi.deleteMonthObligation(id).catch((err) => rollbackOnError(previous, err))
-    },
-    [rollbackOnError, updateMonthPlan],
-  )
-
   return useMemo(
     () => ({
       isLoading: isPending,
@@ -632,7 +460,6 @@ export function usePlanProvider() {
       fixedObligations: data?.fixedObligations ?? [],
       goals: data?.goals ?? [],
       investments: data?.investments ?? [],
-      monthPlans: data?.monthPlans ?? {},
       setSelectedMonth,
       saveSettings,
       getIncomeEntriesForMonth,
@@ -649,14 +476,6 @@ export function usePlanProvider() {
       addInvestment,
       updateInvestment,
       removeInvestment,
-      getMonthPlan,
-      setMonthInvestmentGoal,
-      addMonthIncome,
-      updateMonthIncome,
-      removeMonthIncome,
-      addMonthObligation,
-      updateMonthObligation,
-      removeMonthObligation,
     }),
     [
       isPending,
@@ -682,14 +501,6 @@ export function usePlanProvider() {
       addInvestment,
       updateInvestment,
       removeInvestment,
-      getMonthPlan,
-      setMonthInvestmentGoal,
-      addMonthIncome,
-      updateMonthIncome,
-      removeMonthIncome,
-      addMonthObligation,
-      updateMonthObligation,
-      removeMonthObligation,
     ],
   )
 }

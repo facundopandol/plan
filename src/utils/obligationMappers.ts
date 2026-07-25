@@ -42,12 +42,6 @@ export function getObligationTypeNames(currentType?: string): string[] {
   return Array.from(names)
 }
 
-export function getActiveMonthlyFixedObligations(
-  obligations: FixedObligation[],
-): FixedObligation[] {
-  return obligations.filter((item) => item.active && item.frequency === 'Mensual')
-}
-
 export function fixedObligationToMonthView(
   obligation: FixedObligation,
 ): Obligation {
@@ -60,8 +54,8 @@ export function fixedObligationToMonthView(
   }
 }
 
-export function sumActiveMonthlyFixedObligations(obligations: FixedObligation[]): number {
-  return getActiveMonthlyFixedObligations(obligations).reduce((sum, item) => sum + item.amount, 0)
+export function sumFixedObligations(obligations: FixedObligation[]): number {
+  return obligations.reduce((sum, item) => sum + item.amount, 0)
 }
 
 export function obligationMatchesSearch(

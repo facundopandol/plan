@@ -21,8 +21,6 @@ export function ObligacionesPage() {
     typeFilter,
     setTypeFilter,
     typeNames,
-    frequencyFilter,
-    setFrequencyFilter,
     sortField,
     sortDirection,
     toggleSort,
@@ -59,8 +57,6 @@ export function ObligacionesPage() {
       category: payload.category,
       description: payload.description,
       amount: values.amount,
-      frequency: values.frequency,
-      active: values.active,
     }
 
     if (editing) {
@@ -86,7 +82,7 @@ export function ObligacionesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Obligaciones"
-        description="Definí cuánto reservar por compromiso fijo. Solo montos y frecuencia mensual o anual."
+        description="Compromisos del mes: alquiler, servicios, tarjetas y más."
       />
 
       <ObligationsToolbar
@@ -95,8 +91,6 @@ export function ObligacionesPage() {
         typeFilter={typeFilter}
         onTypeFilterChange={setTypeFilter}
         typeNames={typeNames}
-        frequencyFilter={frequencyFilter}
-        onFrequencyFilterChange={setFrequencyFilter}
         filteredCount={filteredCount}
         totalCount={totalCount}
         onNew={openCreate}

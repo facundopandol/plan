@@ -1,7 +1,6 @@
 import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Trash2 } from 'lucide-react'
 import type { FixedObligation } from '@/types'
 import type { ObligationSortField, SortDirection } from '@/schemas/obligacionSchemas'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/utils/format'
@@ -18,14 +17,7 @@ interface ObligationsTableProps {
 const columns: { key: ObligationSortField; label: string; className?: string }[] = [
   { key: 'name', label: 'Obligación' },
   { key: 'amount', label: 'Monto', className: 'text-right' },
-  { key: 'frequency', label: 'Frecuencia' },
-  { key: 'active', label: 'Activa', className: 'text-center' },
 ]
-
-const frequencyVariant: Record<FixedObligation['frequency'], 'secondary' | 'outline'> = {
-  Mensual: 'secondary',
-  Anual: 'outline',
-}
 
 export function ObligationsTable({
   obligations,
@@ -49,7 +41,7 @@ export function ObligationsTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-border/50">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] text-sm">
+        <table className="w-full min-w-[520px] text-sm">
           <thead>
             <tr className="border-b bg-muted/30">
               {columns.map((col) => (
@@ -60,7 +52,6 @@ export function ObligationsTable({
                     className={cn(
                       'inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground',
                       col.className?.includes('text-right') && 'ml-auto',
-                      col.className?.includes('text-center') && 'mx-auto',
                     )}
                   >
                     {col.label}
@@ -93,16 +84,6 @@ export function ObligationsTable({
                 </td>
                 <td className="px-4 py-3.5 text-right font-semibold tabular-nums">
                   {formatCurrency(obligation.amount)}
-                </td>
-                <td className="px-4 py-3.5">
-                  <Badge variant={frequencyVariant[obligation.frequency]}>
-                    {obligation.frequency}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3.5 text-center">
-                  <Badge variant={obligation.active ? 'success' : 'outline'}>
-                    {obligation.active ? 'Sí' : 'No'}
-                  </Badge>
                 </td>
                 <td className="px-4 py-3.5">
                   <div className="flex justify-end gap-1">

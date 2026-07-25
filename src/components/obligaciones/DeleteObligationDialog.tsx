@@ -41,10 +41,6 @@ export function DeleteObligationDialog({
             <span className="text-muted-foreground">Monto</span>
             <span className="font-medium tabular-nums">{formatCurrency(obligation.amount)}</span>
           </div>
-          <div className="mt-1 flex justify-between">
-            <span className="text-muted-foreground">Frecuencia</span>
-            <span className="font-medium">{obligation.frequency}</span>
-          </div>
         </div>
 
         <div className="flex justify-end gap-2">

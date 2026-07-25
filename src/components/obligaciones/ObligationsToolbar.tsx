@@ -1,5 +1,4 @@
 import { Plus, Search } from 'lucide-react'
-import type { ObligationFrequency } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -9,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { OBLIGATION_FREQUENCIES } from '@/schemas/obligacionSchemas'
 
 interface ObligationsToolbarProps {
   search: string
@@ -17,8 +15,6 @@ interface ObligationsToolbarProps {
   typeFilter: string
   onTypeFilterChange: (value: string) => void
   typeNames: string[]
-  frequencyFilter: ObligationFrequency | 'all'
-  onFrequencyFilterChange: (value: ObligationFrequency | 'all') => void
   filteredCount: number
   totalCount: number
   onNew: () => void
@@ -30,8 +26,6 @@ export function ObligationsToolbar({
   typeFilter,
   onTypeFilterChange,
   typeNames,
-  frequencyFilter,
-  onFrequencyFilterChange,
   filteredCount,
   totalCount,
   onNew,
@@ -72,23 +66,6 @@ export function ObligationsToolbar({
             {typeNames.map((name) => (
               <SelectItem key={name} value={name}>
                 {name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={frequencyFilter}
-          onValueChange={(v) => onFrequencyFilterChange(v as ObligationFrequency | 'all')}
-        >
-          <SelectTrigger className="w-full lg:w-[160px]">
-            <SelectValue placeholder="Frecuencia" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las frecuencias</SelectItem>
-            {OBLIGATION_FREQUENCIES.map((freq) => (
-              <SelectItem key={freq} value={freq}>
-                {freq}
               </SelectItem>
             ))}
           </SelectContent>

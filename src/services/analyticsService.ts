@@ -3,52 +3,66 @@ import type { PlanState } from '@/services/planApi'
 import { getMonthFromDate } from '@/utils/date'
 import { getMonthLabelFromOptions } from '@/utils/month'
 import { computeDestinationDistribution, getDestinationLabel } from '@/utils/investment'
+import {
+  fixedObligationToMonthView,
+  sumFixedObligations,
+} from '@/utils/obligationMappers'
 
-export function buildAnalyticsFromPlan(state: PlanState): AnalyticsData {
+export function buildAnalyticsFromPlan(
+  state: PlanState,
+  selectedMonth?: string,
+): AnalyticsData {
+  // Misma fuente que Dashboard / Obligaciones.
+  const obligationsTotal = sumFixedObligations(state.fixedObligations)
+  const monthObligations = state.fixedObligations.map(fixedObligationToMonthView)
+
   const evolution: MonthlyEvolutionPoint[] = state.monthOptions
     .slice()
     .sort((a, b) => a.value.localeCompare(b.value))
     .map((option) => {
-      const plan = state.monthPlans[option.value]
       const income = state.incomes
         .filter((entry) => getMonthFromDate(entry.date) === option.value)
         .reduce((sum, entry) => sum + entry.amount, 0)
-      const obligations = plan?.obligations.reduce((sum, item) => sum + item.amount, 0) ?? 0
       const reserved = state.investments
         .filter((entry) => getMonthFromDate(entry.date) === option.value)
         .reduce((sum, entry) => sum + entry.amount, 0)
-      const freeMoney = income - obligations - reserved
+      const freeMoney = income - obligationsTotal - reserved
 
       return {
         month: option.value,
         label: getMonthLabelFromOptions(state.monthOptions, option.value).slice(0, 3),
         freeMoney: Math.max(freeMoney, 0),
         income,
-        obligations,
+        obligations: obligationsTotal,
         reserved,
       }
     })
 
-  const selectedMonth = state.monthOptions[0]?.value
+  const focusMonth = selectedMonth || state.monthOptions[0]?.value
   const monthEntries = state.investments.filter(
-    (entry) => getMonthFromDate(entry.date) === selectedMonth,
+    (entry) => getMonthFromDate(entry.date) === focusMonth,
   )
 
   const savingsDistribution = computeDestinationDistribution(monthEntries, state.goals)
 
-  const selectedPlan = selectedMonth ? state.monthPlans[selectedMonth] : undefined
   const categoryTotals = new Map<string, number>()
-
-  for (const obligation of selectedPlan?.obligations ?? []) {
-    categoryTotals.set(obligation.category, (categoryTotals.get(obligation.category) ?? 0) + obligation.amount)
+  for (const obligation of monthObligations) {
+    categoryTotals.set(
+      obligation.category,
+      (categoryTotals.get(obligation.category) ?? 0) + obligation.amount,
+    )
   }
 
-  const totalCategoryAmount = Array.from(categoryTotals.values()).reduce((sum, amount) => sum + amount, 0)
+  const totalCategoryAmount = Array.from(categoryTotals.values()).reduce(
+    (sum, amount) => sum + amount,
+    0,
+  )
   const topCategories: CategoryRanking[] = Array.from(categoryTotals.entries())
     .map(([category, amount]) => ({
       category,
       amount,
-      percentage: totalCategoryAmount > 0 ? Math.round((amount / totalCategoryAmount) * 100) : 0,
+      percentage:
+        totalCategoryAmount > 0 ? Math.round((amount / totalCategoryAmount) * 100) : 0,
     }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5)
@@ -59,26 +73,35 @@ export function buildAnalyticsFromPlan(state: PlanState): AnalyticsData {
       name: goal.name,
       savedAmount: goal.savedAmount,
       targetAmount: goal.targetAmount,
-      percentage: goal.targetAmount > 0 ? Math.round((goal.savedAmount / goal.targetAmount) * 100) : 0,
+      percentage:
+        goal.targetAmount > 0
+          ? Math.round((goal.savedAmount / goal.targetAmount) * 100)
+          : 0,
     }))
     .sort((a, b) => b.percentage - a.percentage)
 
   const monthCount = Math.max(evolution.length, 1)
   const monthlyAverage = {
     income: evolution.reduce((sum, point) => sum + point.income, 0) / monthCount,
-    obligations: evolution.reduce((sum, point) => sum + point.obligations, 0) / monthCount,
+    obligations: obligationsTotal,
     freeMoney: evolution.reduce((sum, point) => sum + point.freeMoney, 0) / monthCount,
     reserved: evolution.reduce((sum, point) => sum + point.reserved, 0) / monthCount,
   }
 
   const topIncome = state.incomes.reduce(
     (best, entry) => (entry.amount > best.amount ? entry : best),
-    state.incomes[0] ?? { description: '—', amount: 0, type: 'Otro' as const, id: '', date: '' },
+    state.incomes[0] ?? {
+      description: '—',
+      amount: 0,
+      type: 'Otro' as const,
+      id: '',
+      date: '',
+    },
   )
 
-  const topObligation = (selectedPlan?.obligations ?? []).reduce(
+  const topObligation = monthObligations.reduce(
     (best, item) => (item.amount > best.amount ? item : best),
-    selectedPlan?.obligations[0] ?? { name: '—', amount: 0, category: 'Otro', id: '' },
+    monthObligations[0] ?? { name: '—', amount: 0, category: 'Otro', id: '' },
   )
 
   const topDestination = monthEntries.reduce(

@@ -1,4 +1,5 @@
-import type { PrimaryColor } from '@/types'
+import type { CurrencyCode, PrimaryColor } from '@/types'
+import { applyFormatSettings } from '@/utils/format'
 
 interface ThemeColors {
   primary: string
@@ -51,6 +52,8 @@ export const PRIMARY_COLOR_SWATCHES: Record<PrimaryColor, string> = {
 export function applyTheme(settings: {
   primaryColor: PrimaryColor
   darkMode: boolean
+  currency?: CurrencyCode
+  locale?: string
 }): void {
   const root = document.documentElement
   const colors = PRIMARY_COLOR_MAP[settings.primaryColor]
@@ -59,6 +62,13 @@ export function applyTheme(settings: {
   root.style.setProperty('--primary-foreground', colors.primaryForeground)
   root.style.setProperty('--ring', colors.ring)
   root.classList.toggle('dark', settings.darkMode)
+
+  if (settings.currency) {
+    applyFormatSettings({
+      currency: settings.currency,
+      locale: settings.locale,
+    })
+  }
 }
 
 export const CURRENCY_OPTIONS = [
