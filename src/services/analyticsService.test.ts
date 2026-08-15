@@ -6,7 +6,7 @@ function makeState(overrides: Partial<PlanState> = {}): PlanState {
   return {
     userId: 'user-1',
     settings: {
-      name: 'Facundo',
+      name: 'Usuario',
       currency: 'ARS',
       locale: 'es-AR',
       monthlySavingsGoal: 100_000,

@@ -92,7 +92,7 @@ La infraestructura está preparada en `app/core/security.py` y `app/modules/auth
 - Hash de contraseñas (`hash_password`, `verify_password`)
 - Dependencia `get_current_user` con fallback al usuario de desarrollo
 
-**Estado actual:** los endpoints usan el usuario por defecto (`dev@plan.local`) hasta que se implemente login JWT.
+**Estado actual:** los endpoints usan el usuario por defecto (`dev@example.com`) hasta que se implemente login JWT.
 
 ## CORS
 

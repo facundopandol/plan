@@ -3,9 +3,21 @@ node_modules/
 dist/
 *.local
 
-# Backend
+# Env — keep *.example tracked
 .env
-backend/.env
+.env.*
+!.env.example
+!backend/.env.example
+
+# Secrets, keys, local dumps
+*.pem
+*.key
+*.p12
+*.sqlite
+*.sqlite3
+*.db
+
+# Backend
 backend/.venv/
 backend/__pycache__/
 backend/**/__pycache__/
@@ -14,3 +26,10 @@ backend/.pytest_cache/
 backend/.mypy_cache/
 backend/.ruff_cache/
 backend/*.egg-info/
+
+# Coverage / OS
+coverage/
+htmlcov/
+.coverage
+.DS_Store
+Thumbs.db

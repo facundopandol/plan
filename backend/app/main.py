@@ -26,7 +26,7 @@ def seed_default_user() -> None:
                 db,
                 {
                     "email": settings.default_user_email,
-                    "name": "Facundo",
+                    "name": "Usuario",
                     "currency": "ARS",
                     "locale": "es-AR",
                     "monthly_savings_goal": 200_000,
